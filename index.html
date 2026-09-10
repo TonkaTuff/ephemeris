@@ -24,12 +24,12 @@ body{margin:0;background:var(--ground);color:var(--ink);font-family:"IBM Plex Sa
 header{display:flex;flex-direction:column;gap:10px;padding-bottom:26px;border-bottom:1px solid var(--line)}
 .eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
 h1{margin:0;font-size:clamp(28px,4.4vw,40px);font-weight:600;letter-spacing:-.02em;text-wrap:balance;line-height:1.12}
-.lede{margin:0;max-width:66ch;color:var(--ink-2);font-size:16.5px}
+.lede{margin:0;max-width:66ch;color:var(--ink-2);font-size:16.5px;text-wrap:balance}
 .lede b{color:var(--ink);font-weight:600}
 section{display:flex;flex-direction:column;gap:16px}
 .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
-.note{margin:0;color:var(--ink-2);max-width:72ch;font-size:14.5px}
+.note{margin:0;color:var(--ink-2);max-width:72ch;font-size:14.5px;text-wrap:pretty}
 .tag{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--line-2);color:var(--ink-3)}
 .tag.now{border-color:var(--probe);color:var(--probe);background:var(--probe-soft)}
 .hero{display:grid;gap:14px;grid-template-columns:minmax(260px,1.4fr) repeat(3,minmax(150px,1fr))}
@@ -88,8 +88,9 @@ a{color:var(--probe)}
   <header>
     <div class="eyebrow" id="eyebrow">ephemeris 0.9.3 · celestial stipple</div>
     <h1>Ephemeris</h1>
-    <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!! <b>No dependencies</b>,
-      one script. Ten kinds of body and forty-two named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
+    <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!!
+      <b>No dependencies</b>, one script. Ten kinds of body and forty‑two named ones, from the
+      Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
   <section id="play">
