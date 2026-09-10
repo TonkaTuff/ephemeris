@@ -3,7 +3,7 @@
 Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
-Nine kinds of body, and named presets for twenty-six real ones:
+Nine kinds of body, and named presets for twenty-eight real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -36,10 +36,11 @@ still override, and the CSS variables still recolour.
 | `m87` | blackhole | | `sirius` | binary |
 | `crab-pulsar` | pulsar | | `totality` | eclipse |
 | `vela` | pulsar | | `earth` | saturn, oceans, land, ice, clouds |
+| `sun` | eclipse, no moon, sunspots, corona | | `jupiter-moons` | saturn, Io, Europa, Ganymede, Callisto |
 | | | | `mars` | saturn, rust, polar caps |
 | | | | `moon` | saturn, maria, craters, phases |
 
-**Demo:** open `index.html`, or https://tonkatuff.github.io/ephemeris once Pages is on.
+**Demo and playground:** https://tonkatuff.github.io/ephemeris/ (click a body, drag the sliders, copy the tag).
 
 ## Use
 
@@ -59,7 +60,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.3.0/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.4.0/src/ephemeris.js"></script>
 ```
 
 ### Markup
@@ -126,7 +127,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
 (`arms`, `wind`, `pitchAngle`, `omega` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
-pulsar and saturn, `rings`, `spot`, `surface`, `phase` for saturn; `period` for supernova and eclipse; `reach`, `omega`
+pulsar and saturn, `rings`, `spot`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour

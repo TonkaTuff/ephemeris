@@ -1,4 +1,4 @@
-/*! ephemeris 0.3.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.4.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -493,7 +493,10 @@
     const W = o.w ?? size, half = size / 2, cx = W / 2;
     const ink = !!o.ink, pal = buildPal(o.palette || SATURN);
     const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
-    const Rp = Math.min(size, W) * (o.rings === false ? 0.36 : 0.2);          // ringless globes fill the orb
+    // moons: [{ a (orbit, planet radii), r (moon radius, planet radii), T (seconds), heat, phase0 }]
+    const moons = o.moons || null, maxA = moons ? Math.max(...moons.map(m => m.a)) : 0;
+    const Rp = Math.min(size, W) * (moons ? 0.15 : o.rings === false ? 0.36 : 0.2);   // ringless globes fill the orb
+    const ax = moons ? Math.min(1.8, Math.max(1, W * 0.47 / (maxA * Rp))) : 1;       // a wide canvas spreads the orbits
     const proj = makeProj(0.12 * Math.sin(t * 0.05), (o.tilt ?? 0.42) + 0.04 * Math.sin(t * 0.08), 0, 0, 1);
     const spin = t * (o.spin ?? 0.35);
     // surface: 'bands' (gas giant), 'moon' (maria + craters), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps)
@@ -530,6 +533,22 @@
       const bright = band[2] * (inShadow ? 0.25 : 1) * (0.85 + 0.15 * E(i, 4.4));
       (z < 0 ? back : front).push([x, y, Math.max(rMin, (0.6 + 0.8 * bright) * M), ink ? null : ramp(pal.ramp, 0.3 + 0.35 * bright),
         ink ? 0.5 + 0.5 * bright : 0.25 + 0.6 * bright, 0.62 - 0.3 * bright]);
+    }
+    if (moons) {   // each moon: a dot at small sizes, a mini sphere when there is room; hidden behind the planet
+      for (const m of moons) {
+        const th = t * TAU / m.T + (m.phase0 || 0), a = m.a * Rp * ax;
+        const [x, y, z] = proj(Math.cos(th) * a, 0, Math.sin(th) * a);
+        if (z < 0 && Math.hypot(x, y) < Rp) continue;
+        const r = Math.max(1.1 * M, m.r * Rp), list = z < 0 ? back : front;
+        if (r < 2.4 * M) list.push([x, y, r, ink ? null : ramp(pal.ramp, m.heat), 1, 0.25]);
+        else {
+          const NM = Math.min(48, Math.round(r * r * 0.9));
+          for (let i = 0; i < NM; i++) {
+            const d = fib(i, NM); if (d[2] < 0) continue;
+            list.push([x + d[0] * r, y + d[1] * r, Math.max(rMin, (0.5 + 0.6 * d[2]) * M), ink ? null : ramp(pal.ramp, m.heat + 0.08 * d[2]), 0.5 + 0.5 * d[2], 0.42 - 0.2 * d[2]]);
+          }
+        }
+      }
     }
     for (const d of back) dot(...d);
     // planet, front hemisphere. Surface pattern is in body-fixed longitude so it turns with the spin.
@@ -732,15 +751,18 @@
     const W = o.w ?? size, half = size / 2, cx = W / 2;
     const ink = !!o.ink, pal = buildPal(o.palette || CORONA);
     const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
-    const Rs = Math.min(size * 0.2, W * 0.2), Rm = Rs * 1.03;
+    const Rs = Math.min(size, W) * (o.radius ?? 0.2), Rm = Rs * 1.03;
+    const hasMoon = o.moon !== false;                                           // moon:false = just the Sun
     const period = o.period ?? 10, p = frac(t / period);
     const e = p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;                 // ease in-out across
-    const mx = (e - 0.5) * Rs * 5.2, my = -0.25 * Rs + 0.5 * Rs * (e - 0.5);
-    const gap = Math.hypot(mx, my), cover = clamp01(1 - gap / (Rs + Rm));
-    const total = clamp01(1 - gap / (Rs * 0.35));
+    const mx = hasMoon ? (e - 0.5) * Rs * 5.2 : 1e9, my = hasMoon ? -0.25 * Rs + 0.5 * Rs * (e - 0.5) : 1e9;
+    const gap = Math.hypot(mx, my);
+    const total = hasMoon ? clamp01(1 - gap / (Rs * 0.35)) : 0;
+    // sunspots drift across the face with the rotation; dots inside are simply not drawn
+    const spots = o.spots ? [0, 1, 2].map(k => ({ x: Rs * 0.85 * Math.sin(t * 0.04 + k * 2.1), y: Rs * (E(k, 52.3) - 0.5) * 0.9, r: Rs * (0.05 + 0.05 * E(k, 53.1)) })) : null;
     const NS = Math.round(160 * countScale(size, 1.2, 12) * (ink ? 0.5 : 1) * lite);
     const NST = Math.round(22 * countScale(size, 0.7, 4)), NPER = Math.round(10 * countScale(size, 0.8, 5) * lite);
-    const inMoon = (x, y) => Math.hypot(x - mx, y - my) < Rm;
+    const inMoon = hasMoon ? (x, y) => Math.hypot(x - mx, y - my) < Rm : () => false;
 
     ctx.save();
     if (o.space) paintSpace(ctx, W, size, t, o);
@@ -754,7 +776,7 @@
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
     }
     // corona streamers, mostly hidden by glare until the moon covers the disc
-    const ca = 0.12 + 0.88 * total * total;
+    const ca = hasMoon ? 0.12 + 0.88 * total * total : 0.42 + 0.18 * noise(1.3, t * 0.1);
     for (let k = 0; k < NST; k++) {
       const a = k / NST * TAU + 0.15 * Math.sin(t * 0.2 + k);
       const len = Rs * (0.45 + 1.4 * noise(k * 0.7, t * 0.08) ** 1.6);
@@ -771,24 +793,32 @@
       const d = fib(i, NS); if (d[2] < 0) continue;
       const x = d[0] * Rs, y = d[1] * Rs, C = d[2];
       if (inMoon(x, y)) continue;
-      dot(x, y, Math.max(rMin, (0.9 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.6 + 0.4 * C), ink ? 1 : 0.6 + 0.4 * C, 0.2 - 0.14 * C);
+      let a = ink ? 1 : 0.6 + 0.4 * C;
+      if (spots) {
+        let pen = 1;
+        for (const sp of spots) { const dd = Math.hypot(x - sp.x, y - sp.y); if (dd < sp.r) { pen = 0; break; } if (dd < sp.r * 1.9) pen = Math.min(pen, 0.45); }
+        if (!pen) continue;
+        a *= pen * (0.72 + 0.28 * noise(x / Rs * 4 + t * 0.1, y / Rs * 4));   // granulation
+      }
+      dot(x, y, Math.max(rMin, (0.9 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.6 + 0.4 * C), a, 0.2 - 0.14 * C);
     }
-    // prominences at the limb during totality, diamond ring just outside it
-    if (total > 0.2) {
+    // prominences at the limb (always on a bare Sun, during totality otherwise), diamond ring just outside it
+    if (!hasMoon || total > 0.2) {
+      const pa = hasMoon ? total : 0.85;
       for (let k = 0; k < 4; k++) {
         const a = E(k, 31.7) * TAU + t * 0.05, r = Rs * (1.02 + 0.08 * E(k, 32.9) * (0.7 + 0.3 * Math.sin(t * 1.3 + k)));
         const x = Math.cos(a) * r, y = Math.sin(a) * r;
-        if (!inMoon(x, y)) dot(x, y, Math.max(rMin, 1.3 * M), pal.ramp[0], (ink ? 1 : 0.8) * total, 0.2);
+        if (!inMoon(x, y)) dot(x, y, Math.max(rMin, 1.3 * M), pal.ramp[0], (ink ? 1 : 0.8) * pa, 0.2);
       }
     }
     const ring = clamp01(1 - Math.abs(gap - Rs * 0.32) / (Rs * 0.28));
-    if (ring > 0 && gap > 0.05) {
+    if (hasMoon && ring > 0 && gap > 0.05) {
       const ux = -mx / gap, uy = -my / gap, x = ux * Rs * 0.98, y = uy * Rs * 0.98;
       if (!ink) { const g = ctx.createRadialGradient(x, y, 0, x, y, Rs * 0.7); g.addColorStop(0, rgba(pal.ramp[2], 0.9 * ring)); g.addColorStop(1, rgba(pal.ramp[2], 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
       dot(x, y, Math.max(rMin, (1.6 + 1.2 * ring) * M), pal.ramp[2], ring, 0.04);
     }
     // the moon: a hard disc in colour, absence in ink
-    if (!ink) { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = pal.shadow; ctx.beginPath(); ctx.arc(mx, my, Rm, 0, TAU); ctx.fill(); }
+    if (hasMoon && !ink) { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = pal.shadow; ctx.beginPath(); ctx.arc(mx, my, Rm, 0, TAU); ctx.fill(); }
     ctx.restore();
     if (o.space) paintRim(ctx, W, size);
   }
@@ -838,6 +868,12 @@
     'earth':        { mode: 'saturn',    opts: { rings: false, surface: 'earth', phase: 0.12, spin: 0.3, tilt: 0.4 },  palette: P([25, 80, 190], [80, 150, 80], [240, 245, 250], [90, 150, 255]) },
     'mars':         { mode: 'saturn',    opts: { rings: false, surface: 'mars', phase: 0.12, spin: 0.28, tilt: 0.35 }, palette: P([140, 55, 30], [215, 115, 60], [255, 240, 230], [220, 120, 70]) },
     'moon':         { mode: 'saturn',    opts: { rings: false, surface: 'moon', phase: 'cycle', period: 24, spin: 0.06, tilt: 0.05 }, palette: P([105, 105, 115], [190, 190, 195], [245, 245, 245], [120, 120, 135]) },
+    'jupiter-moons': { mode: 'saturn',   opts: { rings: false, spot: true, spin: 0.55, tilt: 0.12,
+                       moons: [{ a: 1.75, r: 0.085, T: 5, heat: 0.6, phase0: 0 }, { a: 2.15, r: 0.075, T: 10, heat: 0.95, phase0: 1.2 },
+                               { a: 2.55, r: 0.125, T: 20, heat: 0.5, phase0: 2.6 }, { a: 2.95, r: 0.11, T: 46, heat: 0.15, phase0: 4.1 }] },
+                      palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
+    // the sun
+    'sun':          { mode: 'eclipse',   opts: { moon: false, spots: true, radius: 0.24 } },
     // supernovae
     'sn1987a':      { mode: 'supernova' },
     'cassiopeia-a': { mode: 'supernova', opts: { period: 8 },                            palette: P([60, 200, 170], [255, 110, 90], [255, 245, 230], [90, 170, 190]) },
@@ -847,6 +883,7 @@
     // eclipses
     'totality':     { mode: 'eclipse' }
   };
+  BODIES.galilean = BODIES['jupiter-moons'];
 
   const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDark = () => {
@@ -912,7 +949,7 @@
   }
 
   return {
-    version: '0.3.0',
+    version: '0.4.0',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
