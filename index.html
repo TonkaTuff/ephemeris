@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ephemeris</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#f7f6f4; --panel:#fff; --ink:#191c21; --ink-2:#5c6169; --ink-3:#8b9098;
+  --line:#e2e0dc; --line-2:#cfccc6; --code:#f0eeea; --probe:#0d6b78; --probe-soft:#0d6b7818;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#14161a; --panel:#1b1e23; --ink:#eceef1; --ink-2:#a8aeb7; --ink-3:#787f89;
+  --line:#2a2e35; --line-2:#3a3f47; --code:#22262c; --probe:#4fc3d2; --probe-soft:#4fc3d222;
+}}
+:root[data-theme="dark"]{
+  --ground:#14161a; --panel:#1b1e23; --ink:#eceef1; --ink-2:#a8aeb7; --ink-3:#787f89;
+  --line:#2a2e35; --line-2:#3a3f47; --code:#22262c; --probe:#4fc3d2; --probe-soft:#4fc3d222;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.shell{max-width:1120px;margin:0 auto;padding:40px 24px 80px;display:flex;flex-direction:column;gap:42px}
+header{display:flex;flex-direction:column;gap:10px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+h1{margin:0;font-size:clamp(28px,4.4vw,40px);font-weight:600;letter-spacing:-.02em;text-wrap:balance;line-height:1.12}
+.lede{margin:0;max-width:66ch;color:var(--ink-2);font-size:16.5px}
+.lede b{color:var(--ink);font-weight:600}
+section{display:flex;flex-direction:column;gap:16px}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.note{margin:0;color:var(--ink-2);max-width:72ch;font-size:14.5px}
+.tag{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--line-2);color:var(--ink-3)}
+.tag.now{border-color:var(--probe);color:var(--probe);background:var(--probe-soft)}
+.hero{display:grid;gap:14px;grid-template-columns:minmax(260px,1.4fr) repeat(3,minmax(150px,1fr))}
+@media (max-width:760px){.hero{grid-template-columns:1fr 1fr}.hero .big{grid-column:1/-1}}
+.row{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(178px,1fr))}
+.cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
+.orbwrap{min-height:92px;display:flex;align-items:center;justify-content:center;max-width:100%;overflow-x:auto}
+.big .orbwrap{min-height:200px}
+.nm{font-weight:600;font-size:14.5px}
+.meta{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;color:var(--ink-3);text-align:center;line-height:1.5}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.9em;background:var(--code);padding:1px 5px;border-radius:3px}
+pre{margin:0;padding:14px 16px;background:var(--code);border-radius:4px;overflow-x:auto;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12.5px;line-height:1.6}
+.pair{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.doc{padding:20px 22px;background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;gap:10px}
+.doc p{margin:0;max-width:74ch}
+.doc ul{margin:0;padding-left:20px;color:var(--ink-2)}
+.doc li{margin:3px 0}
+.doc li b{color:var(--ink)}
+footer{border-top:1px solid var(--line);padding-top:20px;color:var(--ink-3);font-size:13px}
+footer p{margin:0 0 6px}
+a{color:var(--probe)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="eyebrow">ephemeris 0.1.0 · celestial thinking-orbs</div>
+    <h1>Ephemeris</h1>
+    <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
+      one script, the same draw contract as <code>thinking-orbs</code>. Three bodies so far: a black hole,
+      a pulsar, a galaxy. Colour them with six CSS variables, or run them monochrome.</p>
+  </header>
+
+  <section>
+    <div class="head"><h2>Pulsar</h2><span class="tag">mode pulsar · state pinging</span></div>
+    <p class="note">A neutron star as a lighthouse: dense spinning core, two beams on a magnetic axis tilted
+      off the spin, dipole field lines riding along. When a beam sweeps the camera the whole thing flares.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="pulsar"></canvas></div><div class="nm">pulsar · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="pulsar"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="pulsar"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1 · half the dots</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar" data-orb-spin="1.4" data-orb-tilt="1.1"></canvas></div><div class="nm">slow, wide tilt</div><div class="meta">data-orb-spin=1.4 · data-orb-tilt=1.1</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Galaxy</h2><span class="tag">mode galaxy · state swirling</span></div>
+    <p class="note">A spiral at a tilt: logarithmic arms, a bright flattened bulge, dust scatter, bright knots,
+      the pattern turning slowly. <code>data-orb-arms</code> picks the count: 4 is the Milky Way, 2 is a
+      grand-design like M51. Wide canvases give it more room.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="galaxy"></canvas></div><div class="nm">galaxy · 160</div><div class="meta">4 arms · milky way</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="galaxy"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="galaxy"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy" data-orb-arms="2"></canvas></div><div class="nm">2 arms</div><div class="meta">data-orb-arms=2</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="galaxy"></canvas></div><div class="nm">wide</div><div class="meta">160×88</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Black hole</h2><span class="tag">mode blackhole · state pondering</span></div>
+    <p class="note">Interstellar's Gargantua. Edge-on accretion disk on Keplerian orbits, far side lensed over
+      the top and under the bottom, photon ring, Doppler-bright on the approaching side. Height sets the
+      shadow, width sets how far the disk reaches (up to 6.5 shadow radii on a 2:1 canvas).</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="320" height="160" data-orb-mode="blackhole"></canvas></div><div class="nm">blackhole · 320×160</div><div class="meta">wide, disk to 6.5 Rs</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="blackhole"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="blackhole"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="blackhole" data-orb-space="1"></canvas></div><div class="nm">wide + space</div><div class="meta">160×88 · flags stack</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Theme it</h2><span class="tag now">6 css variables</span></div>
+    <p class="note">Set any <code>--orb-*</code> custom property on the canvas or an ancestor. Read every
+      frame, so a theme switch or a hover rule applies live. Each mode has its own defaults; set one
+      variable and the rest keep the mode's default. Ink ignores them.</p>
+    <div class="row">
+      <div class="cell" style="--orb-cold:#ff781e;--orb-mid:#ffb782;--orb-hot:#fff6e6;--orb-glow:#ffa546"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar"></canvas></div><div class="nm">pulsar · ember</div><div class="meta">the black hole's colours</div></div>
+      <div class="cell" style="--orb-cold:#0a7a5a;--orb-mid:#5fd8b0;--orb-hot:#e8fff6;--orb-glow:#20b48a"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy"></canvas></div><div class="nm">galaxy · jade</div><div class="meta">cold #0A7A5A · glow #20B48A</div></div>
+      <div class="cell" style="--orb-cold:#b0186e;--orb-mid:#ff7ac8;--orb-hot:#fff0fa;--orb-glow:#e040a0"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole"></canvas></div><div class="nm">blackhole · orchid</div><div class="meta">cold #B0186E · glow #E040A0</div></div>
+      <div class="cell" style="--orb-cold:#6a6a6a;--orb-mid:#c8c8c8;--orb-hot:#ffffff;--orb-glow:#9a9a9a"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="pulsar"></canvas></div><div class="nm">pulsar · silver</div><div class="meta">cold #6A6A6A · glow #9A9A9A</div></div>
+    </div>
+<pre>canvas.orb {
+  --orb-cold:   #1E56D8;   /* far / receding / outer   */
+  --orb-mid:    #7FB0FF;   /* mid                      */
+  --orb-hot:    #EAF3FF;   /* near / approaching / core */
+  --orb-glow:   #3D7BFF;   /* halo + haze              */
+  --orb-ring:   #F2F8FF;   /* photon ring (blackhole)  */
+  --orb-shadow: #000000;   /* the hole (blackhole)     */
+}</pre>
+  </section>
+
+  <div class="pair">
+    <div class="doc">
+      <p><b>Use it.</b> One script, then any canvas with class <code>orb</code>. Height is the preset,
+        width lets a mode stretch. Everything else is a data attribute.</p>
+<pre>&lt;script src="src/ephemeris.js"&gt;&lt;/script&gt;
+
+&lt;canvas class=orb width=64 height=64 data-orb-mode=pulsar&gt;&lt;/canvas&gt;
+&lt;canvas class=orb width=64 height=64 data-orb-state=swirling&gt;&lt;/canvas&gt;
+&lt;canvas class=orb width=128 height=64 data-orb-mode=blackhole
+        data-orb-lite=1 data-orb-space=1&gt;&lt;/canvas&gt;
+
+// added later? wire them up
+Ephemeris.register(someRoot);</pre>
+      <ul>
+        <li><b>data-orb-mode</b> blackhole · pulsar · galaxy, or <b>data-orb-state</b> pondering · pinging · swirling</li>
+        <li><b>data-orb-ink=1</b> monochrome, follows the page theme like thinking-orbs</li>
+        <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
+        <li><b>data-orb-arms</b> (galaxy) · <b>data-orb-spin</b>, <b>data-orb-tilt</b> (pulsar)</li>
+      </ul>
+    </div>
+    <div class="doc">
+      <p><b>Or drive it yourself.</b> Every mode is a plain function with the thinking-orbs signature,
+        so it drops into an existing engine too.</p>
+<pre>Ephemeris.draw('galaxy', ctx, 64, t, dark, {
+  arms: 2, lite: true,
+  palette: { cold:[10,122,90], mid:[95,216,176], hot:[232,255,246],
+             glow:[32,180,138], ring:[255,255,255], shadow:[0,0,0] }
+});
+
+// into thinking-orbs
+Orbs.MODE_DRAWS.pulsar = Ephemeris.MODES.pulsar.draw;
+Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
+      <ul>
+        <li><b>Paused</b> off-screen and on hidden tabs; DPR capped at 2</li>
+        <li><b>Reduced motion</b> draws one still frame, repainted on theme change</li>
+        <li><b>Dot size</b> follows the engine's <code>(size/300)^0.6</code>; counts follow size</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>Ephemeris: the table that tells you where every body in the sky is at a given time. MIT.</p>
+    <p>Roadmap: nebula (dreaming), comet (rushing), saturn (orbiting), supernova (erupting), binary (pairing), eclipse (aligning).</p>
+  </footer>
+</div>
+<script src="src/ephemeris.js"></script>
+</body>
+</html>
