@@ -3,7 +3,7 @@
 Small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No dependencies, one
 script, the same draw contract as [thinking-orbs](https://www.npmjs.com/package/thinking-orbs).
 
-Three bodies so far:
+Nine kinds of body, and named presets for twenty-three real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -11,6 +11,31 @@ Three bodies so far:
 | `pulsar` | pinging | a neutron star as a lighthouse: spinning core, two beams on a tilted magnetic axis, dipole field lines, a flare each time a beam sweeps the camera |
 | `galaxy` | swirling | a spiral at a tilt: logarithmic arms, bright flattened bulge, dust scatter, bright knots, the pattern turning slowly |
 | `nebula` | dreaming | an emission nebula: overlapping gas clouds as soft drifting dots, stretched into wisps, lit from inside by a few young stars |
+| `comet` | rushing | nucleus and coma, a broad curved dust tail and a narrow flickering ion tail streaming away from an off-canvas sun |
+| `saturn` | orbiting | a banded globe with three ring bands and the Cassini gap, tilted, rings on Keplerian speeds, planet shadow on the rings |
+| `supernova` | erupting | a star collapses, blows a shell outward, the shell fades into a filamentary remnant, the core rebuilds; loops |
+| `binary` | pairing | two stars round a barycentre on a tilted orbit, a gas stream pulled off the secondary curling into the primary |
+| `eclipse` | aligning | a dotted sun with a corona of streamers; the moon crosses it, corona and prominences show near totality, diamond ring either side |
+
+### Named bodies
+
+`data-orb-body` picks a mode plus the options and palette that make it that object. Data attributes
+still override, and the CSS variables still recolour.
+
+| body | mode | | body | mode |
+|---|---|---|---|---|
+| `milky-way` | galaxy | | `halley` | comet |
+| `andromeda` | galaxy | | `hale-bopp` | comet |
+| `whirlpool` | galaxy | | `neowise` | comet |
+| `sombrero` | galaxy | | `saturn` | saturn |
+| `orion` | nebula | | `jupiter` | saturn, no rings, a red spot |
+| `crab-nebula` | nebula | | `uranus` | saturn, rings on edge |
+| `pillars` | nebula | | `sn1987a` | supernova |
+| `carina` | nebula | | `cassiopeia-a` | supernova |
+| `gargantua` | blackhole | | `albireo` | binary |
+| `m87` | blackhole | | `sirius` | binary |
+| `crab-pulsar` | pulsar | | `totality` | eclipse |
+| `vela` | pulsar | | | |
 
 **Demo:** open `index.html`, or https://tonkatuff.github.io/ephemeris once Pages is on.
 
@@ -19,6 +44,7 @@ Three bodies so far:
 ```html
 <script src="src/ephemeris.js"></script>
 
+<canvas class="orb" width="64" height="64" data-orb-body="andromeda"></canvas>
 <canvas class="orb" width="64" height="64" data-orb-mode="pulsar"></canvas>
 ```
 
@@ -41,14 +67,16 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 
 | attribute | values | does |
 |---|---|---|
-| `data-orb-mode` | `blackhole` `pulsar` `galaxy` | which body |
-| `data-orb-state` | `pondering` `pinging` `swirling` | same thing, thinking-orbs style |
+| `data-orb-body` | `andromeda` `orion` `saturn` … | a named object, see the table above |
+| `data-orb-mode` | `blackhole` `pulsar` `galaxy` `nebula` `comet` `saturn` `supernova` `binary` `eclipse` | which kind of body |
+| `data-orb-state` | `pondering` `pinging` `swirling` `dreaming` `rushing` `orbiting` `erupting` `pairing` `aligning` | same thing, thinking-orbs style |
 | `data-orb-ink` | `1` | monochrome dots, follows the page theme like thinking-orbs |
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design) |
-| `data-orb-spin` | number | pulsar spin rate, rad/s (default 4.2) |
-| `data-orb-tilt` | number | pulsar magnetic-axis tilt, rad (default 0.62) |
+| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1) |
+| `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
+| `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10) |
 | `data-orb-clouds` | number | nebula cloud count (default 5) |
 | `data-orb-stars` | number | nebula star count (default scales with size, 3 at 64) |
 
@@ -93,7 +121,9 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 ```
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
-(`arms`, `wind`, `omega` for galaxy; `spin`, `tilt` for pulsar; `reach`, `omega` for blackhole).
+(`arms`, `wind`, `pitchAngle`, `omega` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
+pulsar and saturn, `rings`, `spot` for saturn; `period` for supernova and eclipse; `reach`, `omega`
+for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour
 
@@ -102,9 +132,9 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 - `prefers-reduced-motion` draws one still frame, repainted on theme change.
 - Dot radius follows the engine's `(size/300)^0.6`; particle counts follow size.
 
-## Roadmap
+## Want another object?
 
-comet (rushing) · saturn (orbiting) · supernova (erupting) · binary (pairing) · eclipse (aligning)
+Open an issue with a photo. A named body is a dozen lines: a mode, a few options and six colours.
 
 ## Name
 

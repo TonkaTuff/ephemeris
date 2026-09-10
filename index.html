@@ -57,12 +57,43 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow">ephemeris 0.1.0 · celestial thinking-orbs</div>
+    <div class="eyebrow">ephemeris 0.2.0 · celestial thinking-orbs</div>
     <h1>Ephemeris</h1>
     <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
-      one script, the same draw contract as <code>thinking-orbs</code>. Four bodies so far: a black hole,
-      a pulsar, a galaxy, a nebula. Colour them with six CSS variables, or run them monochrome.</p>
+      one script, the same draw contract as <code>thinking-orbs</code>. Nine kinds of body and twenty-three named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
+
+  <section id="bodies">
+    <div class="head"><h2>Named bodies</h2><span class="tag now">data-orb-body</span></div>
+    <p class="note">Recognisable objects, each a mode plus the options and palette that make it that thing.
+      <code>&lt;canvas class=orb data-orb-body=andromeda&gt;</code>. Any data attribute still overrides the body's
+      own settings, and the six CSS variables still recolour it.</p>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="milky-way"></canvas></div><div class="nm">Milky Way</div><div class="meta">milky-way · galaxy</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="andromeda"></canvas></div><div class="nm">Andromeda</div><div class="meta">andromeda · galaxy</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="whirlpool"></canvas></div><div class="nm">Whirlpool (M51)</div><div class="meta">whirlpool · galaxy</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="sombrero"></canvas></div><div class="nm">Sombrero (M104)</div><div class="meta">sombrero · galaxy</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="orion"></canvas></div><div class="nm">Orion Nebula</div><div class="meta">orion · nebula</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="crab-nebula"></canvas></div><div class="nm">Crab Nebula</div><div class="meta">crab-nebula · nebula</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="pillars"></canvas></div><div class="nm">Pillars of Creation</div><div class="meta">pillars · nebula</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="carina"></canvas></div><div class="nm">Carina Nebula</div><div class="meta">carina · nebula</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="gargantua"></canvas></div><div class="nm">Gargantua</div><div class="meta">gargantua · blackhole</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="m87"></canvas></div><div class="nm">M87*</div><div class="meta">m87 · blackhole</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="crab-pulsar"></canvas></div><div class="nm">Crab Pulsar</div><div class="meta">crab-pulsar · pulsar</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="vela"></canvas></div><div class="nm">Vela Pulsar</div><div class="meta">vela · pulsar</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="halley"></canvas></div><div class="nm">Halley</div><div class="meta">halley · comet</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="hale-bopp"></canvas></div><div class="nm">Hale-Bopp</div><div class="meta">hale-bopp · comet</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="neowise"></canvas></div><div class="nm">NEOWISE</div><div class="meta">neowise · comet</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="saturn"></canvas></div><div class="nm">Saturn</div><div class="meta">saturn · saturn</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="jupiter"></canvas></div><div class="nm">Jupiter</div><div class="meta">jupiter · saturn</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="uranus"></canvas></div><div class="nm">Uranus</div><div class="meta">uranus · saturn</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="sn1987a"></canvas></div><div class="nm">SN 1987A</div><div class="meta">sn1987a · supernova</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="cassiopeia-a"></canvas></div><div class="nm">Cassiopeia A</div><div class="meta">cassiopeia-a · supernova</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="albireo"></canvas></div><div class="nm">Albireo</div><div class="meta">albireo · binary</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="sirius"></canvas></div><div class="nm">Sirius A/B</div><div class="meta">sirius · binary</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="totality"></canvas></div><div class="nm">Totality</div><div class="meta">totality · eclipse</div></div>
+    </div>
+  </section>
 
   <section>
     <div class="head"><h2>Pulsar</h2><span class="tag">mode pulsar · state pinging</span></div>
@@ -140,6 +171,91 @@ a{color:var(--probe)}
   </section>
 
   <section>
+    <div class="head"><h2>Comet</h2><span class="tag">mode comet · state rushing</span></div>
+    <p class="note">Nucleus down-left, two tails streaming up-right away from an off-canvas sun: a broad curved dust tail and a narrow, faster, flickering ion tail. Particles are born at the nucleus and age out. <code>data-orb-spin</code> scales the flow.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="comet"></canvas></div><div class="nm">comet · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="comet"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="comet"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="comet"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="comet" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="comet" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="comet" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="comet" ></canvas></div><div class="nm">wide</div><div class="meta">160×88 · longer tail</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Saturn</h2><span class="tag">mode saturn · state orbiting</span></div>
+    <p class="note">A banded globe with three ring bands and the Cassini gap, tilted about 24°, rings on Keplerian speeds. Back-side ring dots hide behind the planet and dim in its shadow. <code>data-orb-tilt</code> for the ring angle, <code>data-orb-spin</code> for rotation.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="saturn"></canvas></div><div class="nm">saturn · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="saturn"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="saturn"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-tilt="1.35"></canvas></div><div class="nm">rings on edge</div><div class="meta">data-orb-tilt=1.35</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-body="jupiter"></canvas></div><div class="nm">jupiter</div><div class="meta">data-orb-body=jupiter · no rings, a spot</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Supernova</h2><span class="tag">mode supernova · state erupting</span></div>
+    <p class="note">A star collapses, blows a shell outward, and the shell fades into a filamentary remnant while the core rebuilds. Loops every <code>data-orb-period</code> seconds, default 6.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="supernova"></canvas></div><div class="nm">supernova · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="supernova"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="supernova"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="supernova"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="supernova" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="supernova" data-orb-period="3"></canvas></div><div class="nm">fast</div><div class="meta">data-orb-period=3</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="supernova" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="supernova" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Binary</h2><span class="tag">mode binary · state pairing</span></div>
+    <p class="note">Two stars round a barycentre on a tilted orbit, a hot primary and a cooler secondary, with a stream of gas pulled off the secondary curling into the primary. Faint orbit trails. <code>data-orb-spin</code> sets the period.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="binary"></canvas></div><div class="nm">binary · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="binary"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="binary"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="binary"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="binary" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="binary" data-orb-spin="0.4"></canvas></div><div class="nm">slow</div><div class="meta">data-orb-spin=0.4</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="binary" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="binary" data-orb-body="sirius"></canvas></div><div class="nm">sirius</div><div class="meta">data-orb-body=sirius · white pair</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Eclipse</h2><span class="tag">mode eclipse · state aligning</span></div>
+    <p class="note">A dotted sun with a corona of streamers; the moon crosses it every <code>data-orb-period</code> seconds, default 10. The corona only shows near totality, with prominences at the limb and a diamond ring either side.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="eclipse"></canvas></div><div class="nm">eclipse · 160</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="eclipse"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="eclipse"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="eclipse"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="eclipse" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1 · the moon is absence</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="eclipse" data-orb-period="5"></canvas></div><div class="nm">fast</div><div class="meta">data-orb-period=5</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="eclipse" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="eclipse" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1</div></div>
+    </div>
+  </section>
+
+  <section>
     <div class="head"><h2>Theme it</h2><span class="tag now">6 css variables</span></div>
     <p class="note">Set any <code>--orb-*</code> custom property on the canvas or an ancestor. Read every
       frame, so a theme switch or a hover rule applies live. Each mode has its own defaults; set one
@@ -174,10 +290,11 @@ a{color:var(--probe)}
 // added later? wire them up
 Ephemeris.register(someRoot);</pre>
       <ul>
-        <li><b>data-orb-mode</b> blackhole · pulsar · galaxy, or <b>data-orb-state</b> pondering · pinging · swirling</li>
+        <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (23, listed above)</li>
+        <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse, or the matching <b>data-orb-state</b></li>
         <li><b>data-orb-ink=1</b> monochrome, follows the page theme like thinking-orbs</li>
         <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
-        <li><b>data-orb-arms</b> (galaxy) · <b>data-orb-spin</b>, <b>data-orb-tilt</b> (pulsar)</li>
+        <li><b>data-orb-arms</b> · <b>data-orb-clouds</b>, <b>data-orb-stars</b> · <b>data-orb-spin</b>, <b>data-orb-tilt</b> · <b>data-orb-period</b></li>
       </ul>
     </div>
     <div class="doc">
@@ -202,7 +319,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
 
   <footer>
     <p>Ephemeris: the table that tells you where every body in the sky is at a given time. MIT.</p>
-    <p>Roadmap: comet (rushing), saturn (orbiting), supernova (erupting), binary (pairing), eclipse (aligning).</p>
+    <p>Want another object? Open an issue with a photo.</p>
   </footer>
 </div>
 <script src="src/ephemeris.js"></script>

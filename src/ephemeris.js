@@ -1,4 +1,4 @@
-/*! ephemeris 0.1.0 — celestial thinking-orbs. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.2.0 — celestial thinking-orbs. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -417,14 +417,391 @@
     if (o.space) paintRim(ctx, W, size);
   }
 
+  /* ================================================================== comet */
+  // Nucleus down-left, two tails streaming up-right away from an off-canvas sun: a broad curved dust
+  // tail and a narrow, faster, flickering ion tail. Particles are born at the nucleus and age out.
+  const HALLEY = { cold: [47, 125, 255], mid: [159, 208, 255], hot: [255, 248, 230], glow: [111, 176, 255], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  const frac = v => v - Math.floor(v);
+  function drawComet(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || HALLEY);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const Rn = size * 0.05;                                       // nucleus
+    const L = Math.min(W * 0.9, size * 1.4) * 0.62;               // tail length
+    const ang = -0.62 + 0.05 * Math.sin(t * 0.21);                // tail heading, up-right
+    const dx = Math.cos(ang), dy = Math.sin(ang), px = -dy, py = dx;
+    const nx = -W * 0.22 + 0.02 * size * Math.sin(t * 0.5), ny = size * 0.2 + 0.02 * size * Math.cos(t * 0.37);
+    const ND = Math.round(220 * countScale(size, 1.2, 12) * (ink ? 0.45 : 1) * lite);
+    const NI = Math.round(110 * countScale(size, 1.2, 12) * (ink ? 0.45 : 1) * lite);
+    const NC = Math.round(40 * countScale(size, 1.1, 8) * lite);
+    const speed = o.spin ?? 1;
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {   // coma
+      const g = ctx.createRadialGradient(nx, ny, 0, nx, ny, Rn * 5);
+      g.addColorStop(0, rgba(pal.ramp[2], 0.55)); g.addColorStop(0.3, rgba(pal.glow, 0.22)); g.addColorStop(1, rgba(pal.glow, 0));
+      ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+    }
+    // dust tail: broad, slow, curves to one side as it ages
+    for (let i = 0; i < ND; i++) {
+      const a = frac(E(i, 1.1) + t * 0.16 * speed * (0.6 + 0.8 * E(i, 2.2)));
+      const d = a ** 0.85 * L;
+      const lat = (E(i, 3.3) - 0.5) * 2 * (0.05 + 0.45 * a) * L * 0.36 + a * a * L * 0.22;
+      const x = nx + dx * d + px * lat, y = ny + dy * d + py * lat;
+      const f = (1 - a) ** 1.4;
+      dot(x, y, Math.max(rMin, (0.7 + 1.5 * f) * M), ink ? null : ramp(pal.ramp, 0.5 + 0.3 * f),
+          ink ? 0.4 + 0.6 * f : 0.08 + 0.55 * f, 0.3 + 0.5 * a);
+    }
+    // ion tail: narrow, fast, straight, flickers
+    for (let i = 0; i < NI; i++) {
+      const a = frac(E(i, 4.4) + t * 0.55 * speed * (0.8 + 0.4 * E(i, 5.5)));
+      const d = a * L * 1.15;
+      const lat = (E(i, 6.6) - 0.5) * 2 * (0.02 + 0.09 * a) * L * 0.36 - a * L * 0.04;
+      const x = nx + dx * d + px * lat, y = ny + dy * d + py * lat;
+      const f = (1 - a) ** 1.1 * (0.55 + 0.45 * noise(i * 0.31, t * 1.6));
+      dot(x, y, Math.max(rMin, (0.5 + 1.0 * f) * M), ink ? null : ramp(pal.ramp, 0.05 + 0.2 * f),
+          ink ? 0.35 + 0.5 * f : 0.1 + 0.6 * f, 0.4 + 0.4 * a);
+    }
+    // coma dots + nucleus
+    for (let i = 0; i < NC; i++) {
+      const u = Math.max(1e-4, E(i, 7.7)), v = E(i, 8.8) * TAU, g = Math.min(2.5, Math.sqrt(-2 * Math.log(u))) * Rn * 1.1;
+      dot(nx + Math.cos(v) * g, ny + Math.sin(v) * g, Math.max(rMin, 0.9 * M), ink ? null : ramp(pal.ramp, 0.8),
+          ink ? 0.5 : 0.18, 0.45);
+    }
+    const NN = Math.round(30 * countScale(size, 1, 6));
+    for (let i = 0; i < NN; i++) {
+      const p = fib(i, NN), z = p[2];
+      if (z < -0.2) continue;
+      const C = (z + 1) / 2;
+      dot(nx + p[0] * Rn, ny + p[1] * Rn, Math.max(rMin, (0.8 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.85 + 0.15 * C),
+          ink ? 1 : 0.6 + 0.4 * C, 0.25 - 0.18 * C);
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
+  /* ================================================================== saturn */
+  // A banded globe with three ring bands and the Cassini gap, tilted ~24°, rings on Keplerian
+  // speeds. Back-side ring dots hide behind the planet and dim in its shadow.
+  const SATURN = { cold: [176, 138, 90], mid: [232, 211, 168], hot: [255, 247, 232], glow: [217, 185, 122], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawSaturn(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || SATURN);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const Rp = Math.min(size * 0.2, W * 0.2);
+    const proj = makeProj(0.12 * Math.sin(t * 0.05), (o.tilt ?? 0.42) + 0.04 * Math.sin(t * 0.08), 0, 0, 1);
+    const spin = t * (o.spin ?? 0.35);
+    const LAT = Math.min(40, Math.max(6, Math.round(15 * (size / 64) ** 0.5 * Math.sqrt(lite))));
+    const LON = Math.min(120, Math.max(10, Math.round(42 * (size / 64) ** 0.6 * Math.sqrt(lite))));
+    const BANDS = [[1.28, 1.55, 0.45], [1.58, 1.95, 1], [2.02, 2.32, 0.7]];       // inner, outer, brightness
+    const NR = Math.round(420 * countScale(size, 1.2, 12) * (ink ? 0.4 : 1) * lite);
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {
+      const g = ctx.createRadialGradient(0, 0, Rp * 0.6, 0, 0, Rp * 2.6);
+      g.addColorStop(0, rgba(pal.glow, 0.22)); g.addColorStop(1, rgba(pal.glow, 0));
+      ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+    }
+    // rings, split by depth around the planet (o.rings === false for a Jupiter)
+    const back = [], front = [];
+    for (let i = 0; i < (o.rings === false ? 0 : NR); i++) {
+      const u = E(i, 1.1) * 2.15, b = u < 0.45 ? 0 : u < 1.45 ? 1 : 2, band = BANDS[b];
+      const r = Rp * (band[0] + (band[1] - band[0]) * E(i, 2.2));
+      const a = E(i, 3.3) * TAU + t * 0.4 / (r / Rp) ** 1.5;
+      const [x, y, z] = proj(Math.cos(a) * r, 0, Math.sin(a) * r);
+      const inShadow = z < 0 && Math.abs(x) < Rp * 1.05;
+      if (z < 0 && Math.hypot(x, y) < Rp) continue;                      // hidden behind the planet
+      const bright = band[2] * (inShadow ? 0.25 : 1) * (0.85 + 0.15 * E(i, 4.4));
+      (z < 0 ? back : front).push([x, y, Math.max(rMin, (0.6 + 0.8 * bright) * M), ink ? null : ramp(pal.ramp, 0.3 + 0.35 * bright),
+        ink ? 0.5 + 0.5 * bright : 0.25 + 0.6 * bright, 0.62 - 0.3 * bright]);
+    }
+    for (const d of back) dot(...d);
+    // planet, front hemisphere, banded
+    for (let la = 0; la <= LAT; la++) {
+      const lat = -Math.PI / 2 + la / LAT * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+      const n = Math.max(1, Math.round(Math.abs(cl) * LON));
+      const band = 0.72 + 0.28 * Math.sin(lat * 9 + E(la, 5.5) * 2);
+      for (let lo = 0; lo < n; lo++) {
+        const ph = lo / n * TAU + spin;
+        const [x, y, z] = proj(cl * Math.cos(ph) * Rp, sl * Rp, cl * Math.sin(ph) * Rp);
+        if (z < 0.02) continue;
+        const C = z / Rp;
+        dot(x, y, Math.max(rMin, (0.6 + 1.3 * C) * M), ink ? null : ramp(pal.ramp, 0.42 + 0.3 * band + 0.25 * C),
+            ink ? 0.7 + 0.3 * C : 0.35 + 0.6 * C * band, 0.58 - 0.4 * C - 0.1 * band);
+      }
+    }
+    if (o.spot) {   // a great red spot: an oval of cold-colour dots riding the southern belt
+      const NSp = Math.round(40 * countScale(size, 1, 6) * lite);
+      for (let i = 0; i < NSp; i++) {
+        const u = Math.sqrt(E(i, 41.1)), v = E(i, 42.2) * TAU;
+        const dlon = Math.cos(v) * u * 0.34, dlat = Math.sin(v) * u * 0.16, lat = -0.36 + dlat, ph = 1.2 + spin + dlon;
+        const cl = Math.cos(lat);
+        const [x, y, z] = proj(cl * Math.cos(ph) * Rp, Math.sin(lat) * Rp, cl * Math.sin(ph) * Rp);
+        if (z < 0.05) continue;
+        dot(x, y, Math.max(rMin, (0.7 + 0.9 * (1 - u)) * M), ink ? null : ramp(pal.ramp, 0.05), ink ? 0.9 : 0.4 * z / Rp, 0.22);
+      }
+    }
+    for (const d of front) dot(...d);
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
+  /* ================================================================== supernova */
+  // A star collapses, blows a shell outward, and the shell fades into a filamentary remnant while
+  // the core rebuilds. Loops on `period` seconds.
+  const CRAB = { cold: [255, 90, 60], mid: [255, 179, 71], hot: [255, 255, 255], glow: [255, 122, 60], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawSupernova(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || CRAB);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const R = Math.min(size * 0.47, W * 0.48);
+    const period = o.period ?? 6, p = frac(t / period);
+    const proj = makeProj(t * 0.08, 0.3, 0, 0, 1);
+    const ease = p => 1 - (1 - p) ** 2.4;
+    const coreR = R * (p < 0.1 ? 0.06 : p < 0.85 ? 0.06 + 0.1 * (p - 0.1) / 0.75 : 0.16 - 0.1 * (p - 0.85) / 0.15);
+    const NS = Math.round(260 * countScale(size, 1.2, 12) * (ink ? 0.45 : 1) * lite);   // shell
+    const NC = Math.round(70 * countScale(size, 1.1, 8) * lite);                          // core
+    const NRm = Math.round(120 * countScale(size, 1.1, 8) * (ink ? 0.5 : 1) * lite);     // remnant
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {
+      const flash = p < 0.14 ? 1 - p / 0.14 : 0;
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * (0.25 + 0.55 * flash));
+      g.addColorStop(0, rgba(pal.ramp[2], 0.25 + 0.6 * flash)); g.addColorStop(0.4, rgba(pal.glow, 0.12 + 0.3 * flash)); g.addColorStop(1, rgba(pal.glow, 0));
+      ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+    }
+    // remnant: last cycle's shell, filamentary, wobbling
+    for (let i = 0; i < NRm; i++) {
+      const d = fib(i, NRm), rr = R * (0.78 + 0.2 * E(i, 9.1)) * (0.94 + 0.06 * noise(i * 0.4, t * 0.3));
+      const [x, y, z] = proj(d[0] * rr, d[1] * rr, d[2] * rr), C = (z / R + 1) / 2;
+      dot(x, y, Math.max(rMin, 0.7 * M), ink ? null : ramp(pal.ramp, 0.05 + 0.15 * C), ink ? 0.45 + 0.3 * C : 0.06 + 0.1 * C, 0.66 - 0.08 * C);
+    }
+    // the shell
+    const sr = R * 0.9 * ease(p), thick = R * (0.02 + 0.12 * p), fade = (1 - p) ** 1.3;
+    for (let i = 0; i < NS; i++) {
+      const d = fib(i, NS), v = 0.8 + 0.4 * E(i, 1.1);
+      const rr = sr * v + (E(i, 2.2) - 0.5) * thick;
+      if (rr < coreR) continue;
+      const [x, y, z] = proj(d[0] * rr, d[1] * rr, d[2] * rr), C = (z / R + 1) / 2;
+      const heat = clamp01(1 - p * 1.2 + 0.2 * C);
+      dot(x, y, Math.max(rMin, (0.6 + 1.6 * fade) * M), ink ? null : ramp(pal.ramp, heat),
+          ink ? 0.4 + 0.6 * fade : (0.15 + 0.75 * fade) * (0.6 + 0.4 * C), 0.15 + 0.5 * p);
+    }
+    // core
+    const hot = p < 0.1 ? 1 : p > 0.85 ? 0.6 + 0.4 * (p - 0.85) / 0.15 : 0.6;
+    for (let i = 0; i < NC; i++) {
+      const d = fib(i, NC);
+      const px = d[0] * Math.cos(t * 0.9) + d[2] * Math.sin(t * 0.9), pz = -d[0] * Math.sin(t * 0.9) + d[2] * Math.cos(t * 0.9);
+      const [x, y, z] = proj(px * coreR, d[1] * coreR, pz * coreR), C = (z / coreR + 1) / 2;
+      dot(x, y, Math.max(rMin, (0.8 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.55 + 0.45 * hot * C),
+          ink ? 0.7 + 0.3 * C : (0.5 + 0.5 * C) * hot, 0.3 - 0.22 * C);
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
+  /* ================================================================== binary */
+  // Two stars round a barycentre on a tilted orbit, a hot primary and a cooler secondary, with a
+  // stream of gas pulled off the secondary curling into the primary.
+  const BINARY = { cold: [255, 140, 66], mid: [255, 217, 168], hot: [223, 241, 255], glow: [159, 198, 255], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawBinary(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || BINARY);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const R = Math.min(size * 0.47, W * 0.48), A = R * 0.6;
+    const proj = makeProj(0.1 * Math.sin(t * 0.06), 0.5, 0, 0, 1);
+    const ph = t * (o.spin ?? 0.9), q = 0.45;                                   // mass ratio
+    const c = Math.cos(ph), s = Math.sin(ph);
+    const P1 = [-A * q / (1 + q) * c, 0, -A * q / (1 + q) * s], P2 = [A / (1 + q) * c, 0, A / (1 + q) * s];
+    const R1 = R * 0.17, R2 = R * 0.105;
+    const N1 = Math.round(80 * countScale(size, 1.1, 8) * lite), N2 = Math.round(50 * countScale(size, 1.1, 8) * lite);
+    const NSt = Math.round(120 * countScale(size, 1.2, 10) * (ink ? 0.5 : 1) * lite);
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    const [x1, y1, z1] = proj(...P1), [x2, y2, z2] = proj(...P2);
+    if (!ink) {
+      for (const [x, y, r, col] of [[x1, y1, R1 * 3.2, pal.glow], [x2, y2, R2 * 3, pal.ramp[0]]]) {
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, rgba(col, 0.45)); g.addColorStop(1, rgba(col, 0));
+        ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+      }
+    }
+    // orbit trails
+    for (let i = 0; i < 64; i++) {
+      const a = i / 64 * TAU, f = 0.25 + 0.75 * frac((ph - a) / TAU);      // brighter just behind each star
+      const [xa, ya] = proj(-A * q / (1 + q) * Math.cos(a), 0, -A * q / (1 + q) * Math.sin(a));
+      const [xb, yb] = proj(A / (1 + q) * Math.cos(a), 0, A / (1 + q) * Math.sin(a));
+      dot(xa, ya, Math.max(rMin, 0.5 * M), ink ? null : ramp(pal.ramp, 0.9), ink ? 0.35 * f : 0.12 * f, 0.7);
+      dot(xb, yb, Math.max(rMin, 0.5 * M), ink ? null : ramp(pal.ramp, 0.1), ink ? 0.35 * f : 0.12 * f, 0.7);
+    }
+    const star = (P, Rr, N, heat, w0) => {
+      const [sx, sy] = proj(...P);
+      for (let i = 0; i < N; i++) {
+        const d = fib(i, N); if (d[2] < -0.1) continue;
+        const C = (d[2] + 1) / 2;
+        dot(sx + d[0] * Rr, sy + d[1] * Rr, Math.max(rMin, (0.7 + 1.3 * C) * M), ink ? null : ramp(pal.ramp, heat + 0.1 * C),
+            ink ? 0.7 + 0.3 * C : 0.5 + 0.5 * C, w0 - 0.2 * C);
+      }
+    };
+    const stream = () => {   // gas from the secondary's inner face, curling into the primary
+      for (let i = 0; i < NSt; i++) {
+        const a = frac(E(i, 1.1) + t * 0.35 * (0.7 + 0.6 * E(i, 2.2)));
+        const lx = P2[0] + (P1[0] - P2[0]) * a, lz = P2[2] + (P1[2] - P2[2]) * a;
+        const curl = Math.sin(Math.PI * a) * A * 0.28 + a * a * A * 0.2;         // lags the orbit
+        const wob = (E(i, 3.3) - 0.5) * A * (0.04 + 0.12 * a);
+        const x = lx + (-s) * curl + c * wob, z = lz + c * curl + s * wob;
+        const [sx, sy, sz] = proj(x, (E(i, 4.4) - 0.5) * A * 0.08, z), C = (sz / A + 1) / 2;
+        const f = Math.sin(Math.PI * a) ** 0.6;
+        dot(sx, sy, Math.max(rMin, (0.5 + 0.9 * f) * M), ink ? null : ramp(pal.ramp, 0.15 + 0.7 * a),
+            ink ? 0.4 + 0.5 * f : (0.1 + 0.5 * f) * (0.6 + 0.4 * C), 0.55 - 0.3 * a);
+      }
+    };
+    if (z1 < z2) { star(P1, R1, N1, 0.85, 0.32); stream(); star(P2, R2, N2, 0.08, 0.4); }
+    else { star(P2, R2, N2, 0.08, 0.4); stream(); star(P1, R1, N1, 0.85, 0.32); }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
+  /* ================================================================== eclipse */
+  // A dotted sun with a corona of streamers; the moon crosses it on `period` seconds. The corona is
+  // only really visible near totality, and there is a diamond ring either side of it.
+  const CORONA = { cold: [255, 179, 71], mid: [255, 232, 176], hot: [255, 255, 255], glow: [255, 195, 107], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawEclipse(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || CORONA);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const Rs = Math.min(size * 0.2, W * 0.2), Rm = Rs * 1.03;
+    const period = o.period ?? 10, p = frac(t / period);
+    const e = p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;                 // ease in-out across
+    const mx = (e - 0.5) * Rs * 5.2, my = -0.25 * Rs + 0.5 * Rs * (e - 0.5);
+    const gap = Math.hypot(mx, my), cover = clamp01(1 - gap / (Rs + Rm));
+    const total = clamp01(1 - gap / (Rs * 0.35));
+    const NS = Math.round(160 * countScale(size, 1.2, 12) * (ink ? 0.5 : 1) * lite);
+    const NST = Math.round(22 * countScale(size, 0.7, 4)), NPER = Math.round(10 * countScale(size, 0.8, 5) * lite);
+    const inMoon = (x, y) => Math.hypot(x - mx, y - my) < Rm;
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {
+      const g = ctx.createRadialGradient(0, 0, Rs * 0.8, 0, 0, Rs * (1.8 + 1.4 * total));
+      g.addColorStop(0, rgba(pal.glow, 0.35 + 0.25 * total)); g.addColorStop(1, rgba(pal.glow, 0));
+      ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+    }
+    // corona streamers, mostly hidden by glare until the moon covers the disc
+    const ca = 0.12 + 0.88 * total * total;
+    for (let k = 0; k < NST; k++) {
+      const a = k / NST * TAU + 0.15 * Math.sin(t * 0.2 + k);
+      const len = Rs * (0.45 + 1.4 * noise(k * 0.7, t * 0.08) ** 1.6);
+      for (let j = 0; j < NPER; j++) {
+        const f = (j + 0.5) / NPER, r = Rs * 1.06 + len * f, spread = (E(j, k + 0.3) - 0.5) * 0.08 * r;
+        const x = Math.cos(a) * r - Math.sin(a) * spread, y = Math.sin(a) * r + Math.cos(a) * spread;
+        if (inMoon(x, y)) continue;
+        dot(x, y, Math.max(rMin, (0.5 + 1.0 * (1 - f)) * M), ink ? null : ramp(pal.ramp, 0.5 + 0.4 * (1 - f)),
+            (ink ? 0.9 : 0.55) * (1 - f) ** 1.2 * ca, 0.3 + 0.4 * f);
+      }
+    }
+    // photosphere with limb darkening
+    for (let i = 0; i < NS; i++) {
+      const d = fib(i, NS); if (d[2] < 0) continue;
+      const x = d[0] * Rs, y = d[1] * Rs, C = d[2];
+      if (inMoon(x, y)) continue;
+      dot(x, y, Math.max(rMin, (0.9 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.6 + 0.4 * C), ink ? 1 : 0.6 + 0.4 * C, 0.2 - 0.14 * C);
+    }
+    // prominences at the limb during totality, diamond ring just outside it
+    if (total > 0.2) {
+      for (let k = 0; k < 4; k++) {
+        const a = E(k, 31.7) * TAU + t * 0.05, r = Rs * (1.02 + 0.08 * E(k, 32.9) * (0.7 + 0.3 * Math.sin(t * 1.3 + k)));
+        const x = Math.cos(a) * r, y = Math.sin(a) * r;
+        if (!inMoon(x, y)) dot(x, y, Math.max(rMin, 1.3 * M), pal.ramp[0], (ink ? 1 : 0.8) * total, 0.2);
+      }
+    }
+    const ring = clamp01(1 - Math.abs(gap - Rs * 0.32) / (Rs * 0.28));
+    if (ring > 0 && gap > 0.05) {
+      const ux = -mx / gap, uy = -my / gap, x = ux * Rs * 0.98, y = uy * Rs * 0.98;
+      if (!ink) { const g = ctx.createRadialGradient(x, y, 0, x, y, Rs * 0.7); g.addColorStop(0, rgba(pal.ramp[2], 0.9 * ring)); g.addColorStop(1, rgba(pal.ramp[2], 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
+      dot(x, y, Math.max(rMin, (1.6 + 1.2 * ring) * M), pal.ramp[2], ring, 0.04);
+    }
+    // the moon: a hard disc in colour, absence in ink
+    if (!ink) { ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = pal.shadow; ctx.beginPath(); ctx.arc(mx, my, Rm, 0, TAU); ctx.fill(); }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
   /* ================================================================== registry + driver */
   const MODES = {
     blackhole: { draw: drawBlackHole, defaults: EMBER,    state: 'pondering' },
     pulsar:    { draw: drawPulsar,    defaults: COBALT,   state: 'pinging' },
     galaxy:    { draw: drawGalaxy,    defaults: MILKYWAY, state: 'swirling' },
-    nebula:    { draw: drawNebula,    defaults: ORION,    state: 'dreaming' }
+    nebula:    { draw: drawNebula,    defaults: ORION,    state: 'dreaming' },
+    comet:     { draw: drawComet,     defaults: HALLEY,   state: 'rushing' },
+    saturn:    { draw: drawSaturn,    defaults: SATURN,   state: 'orbiting' },
+    supernova: { draw: drawSupernova, defaults: CRAB,     state: 'erupting' },
+    binary:    { draw: drawBinary,    defaults: BINARY,   state: 'pairing' },
+    eclipse:   { draw: drawEclipse,   defaults: CORONA,   state: 'aligning' }
   };
   const STATE_TO_MODE = Object.fromEntries(Object.entries(MODES).map(([m, v]) => [v.state, m]));
+
+  // Named bodies: a mode plus the options and palette that make it that particular object.
+  // <canvas class=orb data-orb-body=andromeda>. Data attributes still override the body's options.
+  const P = (cold, mid, hot, glow, ring = [255, 255, 255], shadow = [0, 0, 0]) => ({ cold, mid, hot, glow, ring, shadow });
+  const BODIES = {
+    // galaxies
+    'milky-way':    { mode: 'galaxy',    opts: { arms: 4 } },
+    'andromeda':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.5, wind: 4.4 },   palette: P([90, 120, 255], [180, 190, 255], [255, 235, 200], [120, 120, 220]) },
+    'whirlpool':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.35, wind: 3 },    palette: P([70, 110, 255], [215, 200, 255], [255, 240, 220], [150, 120, 255]) },
+    'sombrero':     { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.14, wind: 5 },    palette: P([150, 120, 200], [235, 215, 200], [255, 245, 225], [190, 160, 180]) },
+    // nebulae
+    'orion':        { mode: 'nebula' },
+    'crab-nebula':  { mode: 'nebula',    opts: { clouds: 4, starN: 1 },                  palette: P([60, 180, 140], [255, 120, 80], [255, 240, 220], [200, 90, 120]) },
+    'pillars':      { mode: 'nebula',    opts: { clouds: 3, starN: 2 },                  palette: P([30, 110, 120], [200, 150, 60], [255, 240, 200], [120, 120, 60]) },
+    'carina':       { mode: 'nebula',    opts: { clouds: 6, starN: 6 },                  palette: P([120, 60, 160], [255, 140, 100], [255, 235, 210], [200, 100, 140]) },
+    // black holes
+    'gargantua':    { mode: 'blackhole' },
+    'm87':          { mode: 'blackhole', opts: { reach: 2.6, omega: 1.2 },               palette: P([180, 60, 10], [255, 140, 30], [255, 230, 160], [255, 120, 20]) },
+    // pulsars
+    'crab-pulsar':  { mode: 'pulsar',    opts: { spin: 6.5, tilt: 0.5 } },
+    'vela':         { mode: 'pulsar',    opts: { spin: 2.4, tilt: 0.9 },                 palette: P([120, 60, 220], [190, 160, 255], [240, 235, 255], [150, 100, 255]) },
+    // comets
+    'halley':       { mode: 'comet' },
+    'hale-bopp':    { mode: 'comet',     opts: { spin: 0.7 },                            palette: P([60, 140, 255], [255, 220, 150], [255, 255, 240], [200, 190, 255]) },
+    'neowise':      { mode: 'comet',     opts: { spin: 1.3 },                            palette: P([255, 180, 90], [255, 220, 170], [255, 250, 235], [255, 190, 110]) },
+    // planets
+    'saturn':       { mode: 'saturn' },
+    'jupiter':      { mode: 'saturn',    opts: { rings: false, spot: true, spin: 0.55 }, palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
+    'uranus':       { mode: 'saturn',    opts: { tilt: 1.35, spin: 0.25 },               palette: P([90, 170, 190], [180, 230, 235], [235, 250, 250], [120, 200, 210]) },
+    // supernovae
+    'sn1987a':      { mode: 'supernova' },
+    'cassiopeia-a': { mode: 'supernova', opts: { period: 8 },                            palette: P([60, 200, 170], [255, 110, 90], [255, 245, 230], [90, 170, 190]) },
+    // binaries
+    'albireo':      { mode: 'binary' },
+    'sirius':       { mode: 'binary',    opts: { spin: 0.7 },                            palette: P([200, 220, 255], [235, 240, 255], [255, 255, 255], [170, 200, 255]) },
+    // eclipses
+    'totality':     { mode: 'eclipse' }
+  };
 
   const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDark = () => {
@@ -441,8 +818,10 @@
   function mount(canvas) {
     if (canvas.dataset.orbReady === '1') return;
     canvas.dataset.orbReady = '1';
-    const modeName = canvas.dataset.orbMode || STATE_TO_MODE[canvas.dataset.orbState] || 'blackhole';
+    const body = BODIES[canvas.dataset.orbBody] || null;
+    const modeName = canvas.dataset.orbMode || (body && body.mode) || STATE_TO_MODE[canvas.dataset.orbState] || 'blackhole';
     const mode = MODES[modeName] || MODES.blackhole;
+    const defaults = (body && body.palette) || mode.defaults;
     const w = parseInt(canvas.getAttribute('width') || '', 10) || 64;
     const size = parseInt(canvas.getAttribute('height') || '', 10) || w;
     const dpr = Math.min(2, window.devicePixelRatio || 1);     // past 2 the dots cost more than they show
@@ -451,11 +830,12 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const ds = canvas.dataset;
-    const opts = { w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1',
-                   arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
-                   clouds: num(ds.orbClouds), starN: num(ds.orbStars) };
+    const own = { arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
+                  clouds: num(ds.orbClouds), starN: num(ds.orbStars), period: num(ds.orbPeriod) };
+    for (const k in own) if (own[k] === undefined) delete own[k];
+    const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1' };
     const paint = t => {
-      opts.palette = readPalette(canvas, mode.defaults);     // every frame, so themes and :hover apply live
+      opts.palette = readPalette(canvas, defaults) || (body && body.palette) || null;   // every frame, so themes and :hover apply live
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, size);
       mode.draw(ctx, size, t, isDark(), opts);
     };
@@ -486,9 +866,14 @@
   }
 
   return {
-    version: '0.1.0',
-    register, mount, MODES, STATE_TO_MODE,
+    version: '0.2.0',
+    register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
+    // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
+    body: (name, ctx, size, t, dark, opts) => {
+      const b = BODIES[name]; if (!b) throw new Error('ephemeris: unknown body ' + name);
+      return MODES[b.mode].draw(ctx, size, t, dark, { ...b.opts, palette: b.palette || null, ...opts });
+    },
     palette: { keys: KEYS, build: buildPal, read: readPalette, parse: parseCol, ramp },
     _: { E, fib, makeProj, paintSpace, paintRim, dotPainter }
   };
