@@ -67,7 +67,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.7.0/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.7.1/src/ephemeris.js"></script>
 ```
 
 ### Markup
@@ -84,7 +84,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design) |
-| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1), orrery time scale (1) |
+| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
 | `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` `pluto` | planet surface on the saturn mode |

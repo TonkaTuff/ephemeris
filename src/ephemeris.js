@@ -1,4 +1,4 @@
-/*! ephemeris 0.7.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.7.1 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -322,7 +322,7 @@
   /* ================================================================== nebula */
   // An emission nebula: a few overlapping gas clouds drawn as soft, low-alpha dots that drift on a
   // slow noise field, lit from inside by a handful of young stars. Wisps come from stretching each
-  // cloud along its own axis. Dreamy by design: nothing here moves fast.
+  // cloud along its own axis. Each cloud swirls slowly about its own centre while the field drifts.
   const ORION = { cold: [75, 63, 191], mid: [208, 90, 160], hot: [255, 217, 194], glow: [138, 79, 208], ring: [255, 255, 255], shadow: [0, 0, 0] };
   // 2-d value noise, smooth, for the drift
   const noise = (x, y) => {
@@ -338,18 +338,19 @@
     const Rx = W * 0.46, Ry = size * 0.46, R = Math.min(Rx, Ry);
     const N = o.n ?? Math.round(360 * countScale(size, 1.3, 20) * Math.sqrt(Rx / Ry) * (ink ? 0.4 : 1) * lite);
     const K = o.clouds ?? 5, NS = o.starN ?? Math.max(3, Math.round(5 * countScale(size, 0.6, 4)));
-    const slow = t * (o.omega ?? 0.05);
+    const slow = t * (o.omega ?? 0.18) * (o.spin ?? 1);   // drift rate; spin scales all the motion
     const rMin = 0.3;
 
-    // clouds: centre, radius, stretch axis, base heat; centres breathe slowly
+    // clouds: centre, radius, stretch axis, base heat; centres wander, axes turn
     const clouds = [];
     for (let k = 0; k < K; k++) {
       const a = E(k, 11.3) * TAU + slow * 0.4;
       clouds.push({
-        x: Math.cos(a) * Rx * (0.15 + 0.4 * E(k, 12.1)) + 0.06 * R * Math.sin(t * 0.07 + k),
-        y: Math.sin(a) * Ry * (0.15 + 0.4 * E(k, 13.7)) + 0.06 * R * Math.cos(t * 0.05 + k * 1.3),
+        x: Math.cos(a) * Rx * (0.15 + 0.4 * E(k, 12.1)) + 0.1 * R * Math.sin(slow * 0.7 + k),
+        y: Math.sin(a) * Ry * (0.15 + 0.4 * E(k, 13.7)) + 0.1 * R * Math.cos(slow * 0.5 + k * 1.3),
         r: R * (0.28 + 0.34 * E(k, 14.9)),
-        ax: E(k, 15.2) * Math.PI, st: 1.3 + 0.9 * E(k, 16.4),
+        ax: E(k, 15.2) * Math.PI + slow * (0.5 + 0.5 * E(k, 18.2)) * (E(k, 19.4) > 0.5 ? 1 : -1),   // the swirl
+        st: 1.3 + 0.9 * E(k, 16.4),
         heat: 0.25 + 0.5 * E(k, 17.8)
       });
     }
@@ -393,12 +394,12 @@
       let lx = Math.cos(v) * g * c.r * c.st, ly = Math.sin(v) * g * c.r / c.st;
       const ca = Math.cos(c.ax), sa = Math.sin(c.ax);
       let x = c.x + lx * ca - ly * sa, y = c.y + lx * sa + ly * ca;
-      x += (noise(i * 0.37, slow + i * 0.011) - 0.5) * 0.28 * R;         // drift
-      y += (noise(i * 0.53 + 40, slow * 0.8 + i * 0.013) - 0.5) * 0.28 * R;
+      x += (noise(i * 0.37, slow + i * 0.011) - 0.5) * 0.32 * R;         // drift
+      y += (noise(i * 0.53 + 40, slow * 0.8 + i * 0.013) - 0.5) * 0.32 * R;
       const edge = clamp01(g / 1.1);                                       // 0 core .. 1 fringe
       const L = lit(x, y);
       const heat = clamp01(c.heat * (1 - edge) + 0.6 * L);
-      const a = ink ? 0.55 + 0.45 * (1 - edge) : (0.05 + 0.16 * (1 - edge) + 0.22 * L) * (0.7 + 0.3 * noise(i * 0.19, t * 0.15));
+      const a = ink ? 0.55 + 0.45 * (1 - edge) : (0.05 + 0.16 * (1 - edge) + 0.22 * L) * (0.65 + 0.35 * noise(i * 0.19, slow * 2.5));
       const rr = Math.max(rMin, (1.2 + 1.8 * (1 - edge) + 1.4 * L) * M);
       dot(x, y, rr, ink ? null : ramp(pal.ramp, heat), a, 0.34 + 0.34 * edge - 0.2 * L);
     }
@@ -1062,7 +1063,7 @@
   }
 
   return {
-    version: '0.7.0',
+    version: '0.7.1',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

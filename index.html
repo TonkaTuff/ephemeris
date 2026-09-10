@@ -83,7 +83,7 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow">ephemeris 0.7.0 · dot-celestials</div>
+    <div class="eyebrow">ephemeris 0.7.1 · dot-celestials</div>
     <h1>Ephemeris</h1>
     <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
       one script. Ten kinds of body and thirty-four named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
@@ -196,8 +196,8 @@ a{color:var(--probe)}
   <section>
     <div class="head"><h2>Nebula</h2><span class="tag">mode nebula · state dreaming</span></div>
     <p class="note">An emission nebula: overlapping gas clouds as soft dots drifting on a slow noise field,
-      stretched into wisps, lit from inside by a few young stars with faint diffraction spikes. Nothing
-      here moves fast. <code>data-orb-clouds</code> and <code>data-orb-stars</code> set the counts.</p>
+      stretched into wisps, lit from inside by a few young stars with faint diffraction spikes. Each cloud
+      swirls slowly about its own centre while the whole field drifts; <code>data-orb-spin</code> scales it. <code>data-orb-clouds</code> and <code>data-orb-stars</code> set the counts.</p>
     <div class="hero">
       <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="nebula"></canvas></div><div class="nm">nebula · 160</div><div class="meta">5 clouds · orion</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="nebula"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
@@ -391,8 +391,8 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   const KNOBS = { spin: [0.05, 8, 0.05, 'spin'], tilt: [0, 1.5, 0.01, 'tilt'], period: [2, 40, 1, 'period'],
                   arms: [1, 6, 1, 'arms'], clouds: [1, 8, 1, 'clouds'], stars: [0, 12, 1, 'stars'], phase: [0, 1, 0.01, 'phase'] };
   // only spin and tilt get sliders; period, phase, arms, clouds, stars stay in the README for people to find
-  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: [], nebula: [], supernova: [], eclipse: [],
-                       binary: ['spin'], comet: ['spin'], blackhole: [], orrery: ['spin', 'tilt'] };
+  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: [], supernova: [], eclipse: [],
+                       binary: ['spin'], comet: ['spin'], blackhole: [], orrery: ['spin', 'tilt'], nebula: ['spin'] };
   const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
   const st = { body: 'andromeda', size: 240, ratio: 1, ink: false, lite: false, space: false, knobs: {}, colors: {} };
 
