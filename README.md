@@ -23,37 +23,52 @@ Ten kinds of body, and named presets for forty-two real ones:
 `data-orb-body` picks a mode plus the options and palette that make it that object. Data attributes
 still override, and the CSS variables still recolour.
 
-| body | mode | | body | mode |
-|---|---|---|---|---|
-| `milky-way` | galaxy | | `halley` | comet |
-| `andromeda` | galaxy | | `hale-bopp` | comet |
-| `whirlpool` | galaxy | | `neowise` | comet |
-| `sombrero` | galaxy | | `saturn` | saturn |
-| `orion` | nebula | | `jupiter` | saturn, no rings, a red spot |
-| `crab-nebula` | nebula | | `uranus` | saturn, rings on edge |
-| `pillars` | nebula | | `sn1987a` | supernova |
-| `carina` | nebula | | `cassiopeia-a` | supernova |
-| `gargantua` | blackhole | | `albireo` | binary |
-| `m87` | blackhole | | `sirius` | binary |
-| `crab-pulsar` | pulsar | | `totality` | eclipse |
-| `vela` | pulsar | | `earth` | saturn, oceans, land, ice, clouds |
-| `sun` | eclipse, no moon, sunspots, corona | | `jupiter-moons` | saturn, Io, Europa, Ganymede, Callisto |
-| | | | `neptune` | saturn, dark spot, cloud streaks |
-| | | | `mercury` | saturn, cratered, lit from the side |
-| | | | `venus` | saturn, cream clouds, retrograde |
-| | | | `pluto` | saturn, tan and maroon, the heart |
-| | | | `earth-moon` | saturn, Earth with the Moon in orbit |
-| | | | `solar-system` | orrery |
-| | | | `mars` | saturn, rust, polar caps |
-| | | | `moon` | saturn, maria, craters, phases |
-| `pinwheel` | galaxy, M101, face-on, knotted | | | |
-| `triangulum` | galaxy, M33, loose flocculent | | | |
-| `bodes` | galaxy, M81, warm gold core | | | |
-| `southern-pinwheel` | galaxy, M83, three arms off a bar | | | |
-| `ngc-1300` | galaxy, barred spiral | | | |
-| `magellanic` | galaxy, LMC, irregular, a bar and a stub arm | | | |
-| `cartwheel` | galaxy, ring and spokes | | | |
-| `cigar` | galaxy, M82, edge-on with plumes | | | |
+| family | body | mode, notes |
+|---|---|---|
+| Solar system | `sun` | eclipse, no moon, sunspots, corona |
+|  | `mercury` | saturn, cratered, lit from the side |
+|  | `venus` | saturn, cream clouds, retrograde |
+|  | `earth` | saturn, oceans, land, ice, clouds |
+|  | `moon` | saturn, maria, craters, phases |
+|  | `earth-moon` | saturn, Earth with the Moon in orbit |
+|  | `mars` | saturn, rust, polar caps |
+|  | `jupiter` | saturn, no rings, a red spot |
+|  | `jupiter-moons` | saturn, Io, Europa, Ganymede, Callisto |
+|  | `saturn` | saturn |
+|  | `uranus` | saturn, rings on edge |
+|  | `neptune` | saturn, dark spot, cloud streaks |
+|  | `pluto` | saturn, tan and maroon, the heart |
+|  | `solar-system` | orrery |
+|  | `totality` | eclipse |
+| Comets | `halley` | comet |
+|  | `hale-bopp` | comet |
+|  | `neowise` | comet |
+| Stars | `sirius` | binary, A and the white dwarf |
+|  | `albireo` | binary, gold and blue |
+|  | `crab-pulsar` | pulsar |
+|  | `vela` | pulsar |
+|  | `sn1987a` | supernova |
+|  | `cassiopeia-a` | supernova |
+| Black holes | `gargantua` | blackhole, Interstellar |
+|  | `m87` | blackhole, the EHT one |
+| Nebulae | `orion` | nebula |
+|  | `crab-nebula` | nebula |
+|  | `pillars` | nebula |
+|  | `carina` | nebula |
+| Galaxies | `milky-way` | galaxy, four arms |
+|  | `andromeda` | galaxy, M31, tilted grand design |
+|  | `triangulum` | galaxy, M33, loose flocculent |
+|  | `magellanic` | galaxy, LMC, irregular, a bar and a stub arm |
+|  | `whirlpool` | galaxy, M51, face-on |
+|  | `pinwheel` | galaxy, M101, face-on, knotted |
+|  | `southern-pinwheel` | galaxy, M83, three arms off a bar |
+|  | `bodes` | galaxy, M81, warm gold core |
+|  | `sombrero` | galaxy, M104, edge-on |
+|  | `ngc-1300` | galaxy, barred spiral |
+|  | `cartwheel` | galaxy, ring and spokes |
+|  | `cigar` | galaxy, M82, edge-on with plumes |
+
+`Ephemeris.GROUPS` is the same list as an object, family name to body names, in this order.
 
 **Demo and playground:** https://tonkatuff.github.io/ephemeris/ (click a body, drag the sliders, copy the tag).
 
@@ -75,7 +90,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.8.0/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.8.1/src/ephemeris.js"></script>
 ```
 
 ### Markup

@@ -1,4 +1,4 @@
-/*! ephemeris 0.8.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.8.1 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -1025,6 +1025,15 @@
     'totality':     { mode: 'eclipse' }
   };
   BODIES.galilean = BODIES['jupiter-moons'];
+  // named bodies by family, in display order (aliases left out)
+  const GROUPS = {
+    'Solar system': ['sun', 'mercury', 'venus', 'earth', 'moon', 'earth-moon', 'mars', 'jupiter', 'jupiter-moons', 'saturn', 'uranus', 'neptune', 'pluto', 'solar-system', 'totality'],
+    'Comets': ['halley', 'hale-bopp', 'neowise'],
+    'Stars': ['sirius', 'albireo', 'crab-pulsar', 'vela', 'sn1987a', 'cassiopeia-a'],
+    'Black holes': ['gargantua', 'm87'],
+    'Nebulae': ['orion', 'crab-nebula', 'pillars', 'carina'],
+    'Galaxies': ['milky-way', 'andromeda', 'triangulum', 'magellanic', 'whirlpool', 'pinwheel', 'southern-pinwheel', 'bodes', 'sombrero', 'ngc-1300', 'cartwheel', 'cigar']
+  };
   BODIES.lmc = BODIES.magellanic; BODIES.m82 = BODIES.cigar; BODIES.m101 = BODIES.pinwheel; BODIES.m33 = BODIES.triangulum; BODIES.m81 = BODIES.bodes; BODIES.m83 = BODIES['southern-pinwheel'];
 
   const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1091,8 +1100,8 @@
   }
 
   return {
-    version: '0.8.0',
-    register, mount, MODES, STATE_TO_MODE, BODIES,
+    version: '0.8.1',
+    register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
     body: (name, ctx, size, t, dark, opts) => {
