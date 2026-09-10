@@ -62,6 +62,7 @@ h2{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
 .pg .snip button,.pg .reset{position:absolute;top:8px;right:8px;font:inherit;font-size:12px;padding:4px 10px;border-radius:4px;border:1px solid var(--line-2);background:var(--panel);color:var(--ink);cursor:pointer}
 .pg .reset{position:static}
 .pg .snip button:hover,.pg .reset:hover{border-color:var(--probe);color:var(--probe)}
+.pg .knobs{display:flex;flex-direction:column;gap:12px}
 .pg .knobs:empty{display:none}
 .cell{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px 14px 14px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
 .orbwrap{min-height:92px;display:flex;align-items:center;justify-content:center;max-width:100%;overflow-x:auto}
@@ -85,7 +86,7 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow" id="eyebrow">ephemeris 0.9.2 · celestial stipple</div>
+    <div class="eyebrow" id="eyebrow">ephemeris 0.9.3 · celestial stipple</div>
     <h1>Ephemeris</h1>
     <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!! <b>No dependencies</b>,
       one script. Ten kinds of body and forty-two named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
@@ -408,7 +409,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
                   arms: [1, 6, 1, 'Arms'], clouds: [1, 8, 1, 'Clouds'], stars: [0, 12, 1, 'Stars'], phase: [0, 1, 0.01, 'Phase'] };
   // only spin and tilt get sliders; period, phase, arms, clouds, stars stay in the README for people to find
   { const eb = document.getElementById('eyebrow'); if (eb) eb.firstChild.data = 'ephemeris ' + Ephemeris.version + ' · celestial stipple'; }
-  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: [], supernova: [], eclipse: ['spin'],
+  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: ['spin', 'tilt'], supernova: [], eclipse: ['spin'],
                        binary: ['spin'], comet: ['spin'], blackhole: [], orrery: ['spin', 'tilt'], nebula: ['spin'] };
   const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
   const st = { body: 'andromeda', size: 240, ratio: 1, ink: false, lite: false, space: false, knobs: {}, colors: {} };
@@ -450,7 +451,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
     const w = Math.round(st.size * st.ratio), h = st.size;
     let a = `<canvas class="orb" width="${w}" height="${h}" data-orb-body="${st.body}"`;
     if (st.ink) a += ' data-orb-ink="1"'; if (st.lite) a += ' data-orb-lite="1"'; if (st.space) a += ' data-orb-space="1"';
-    for (const k in st.knobs) a += ` data-orb-${KNOBS[k][3]}="${st.knobs[k]}"`;
+    for (const k in st.knobs) a += ` data-orb-${k}="${st.knobs[k]}"`;
     const cs = Object.entries(st.colors).map(([k, v]) => `--orb-${k}:${v}`).join(';');
     if (cs) a += ` style="${cs}"`;
     return a + '></canvas>';

@@ -1,4 +1,4 @@
-/*! ephemeris 0.9.2 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.9.3 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -281,11 +281,12 @@
     const arms = o.arms ?? 4, k = o.wind ?? 3.4;         // wind = 1/tan(pitch angle) ≈ 16°
     const bar = o.bar ?? 0, ring = o.ring ?? 0, spokes = o.spokes ?? 0.25, plume = o.plume ?? 0;
     const scat = o.scatter ?? 1, knotAt = 1 - (o.knots ?? 0.07), r0 = R * (bar || 0.13);
-    const pitch = (o.pitchAngle ?? 1.0) + 0.05 * Math.sin(t * 0.11);   // camera elevation, 0 = edge-on
+    // tilt is the camera elevation: 0 edge-on, about 1.5 face-on. pitchAngle is the old name for it.
+    const pitch = (o.tilt ?? o.pitchAngle ?? 1.0) + 0.05 * Math.sin(t * 0.11);
     const proj = makeProj(0.25 + 0.06 * Math.sin(t * 0.05), pitch, 0, 0, 1);
     // Arms trail: the pattern turns against the way the spiral winds outward, so the tips sweep
     // backwards. Turning it the other way gives a leading spiral, which real galaxies do not do.
-    const turn = -t * (o.omega ?? 0.18);                 // pattern rotation
+    const turn = -t * (o.omega ?? 0.18) * (o.spin ?? 1);  // pattern rotation; spin scales it
     const N = o.n ?? Math.round(420 * countScale(size, 1.3, 20) * (o.ink ? 0.45 : 1) * lite);
     const rMin = 0.3;
 
@@ -978,17 +979,17 @@
   const BODIES = {
     // galaxies
     'milky-way':    { mode: 'galaxy',    opts: { arms: 4 } },
-    'andromeda':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.5, wind: 4.4 },   palette: P([90, 120, 255], [180, 190, 255], [255, 235, 200], [120, 120, 220]) },
-    'whirlpool':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.35, wind: 3 },    palette: P([70, 110, 255], [215, 200, 255], [255, 240, 220], [150, 120, 255]) },
-    'sombrero':     { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.14, wind: 5 },    palette: P([150, 120, 200], [235, 215, 200], [255, 245, 225], [190, 160, 180]) },
-    'pinwheel':     { mode: 'galaxy',    opts: { arms: 4, pitchAngle: 1.45, wind: 2.6, knots: 0.16, scatter: 1.3 }, palette: P([80, 130, 255], [190, 205, 255], [255, 240, 205], [110, 130, 240]) },
-    'triangulum':   { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.1, wind: 2.4, scatter: 2.2, knots: 0.18 }, palette: P([100, 150, 255], [200, 215, 255], [240, 245, 255], [120, 150, 240]) },
-    'bodes':        { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.0, wind: 3.8 },    palette: P([120, 130, 230], [230, 205, 170], [255, 235, 180], [200, 170, 140]) },
-    'southern-pinwheel': { mode: 'galaxy', opts: { arms: 3, bar: 0.3, pitchAngle: 1.3, wind: 2.8, knots: 0.14 }, palette: P([90, 130, 255], [210, 200, 240], [255, 238, 200], [140, 130, 240]) },
-    'ngc-1300':     { mode: 'galaxy',    opts: { arms: 2, bar: 0.5, pitchAngle: 1.2, wind: 2.2, scatter: 0.7 }, palette: P([90, 120, 255], [200, 190, 240], [255, 230, 190], [130, 120, 230]) },
-    'magellanic':   { mode: 'galaxy',    opts: { arms: 1, bar: 0.45, pitchAngle: 1.2, wind: 1.5, scatter: 2.4, knots: 0.2, omega: 0.1 }, palette: P([110, 140, 255], [220, 200, 240], [255, 225, 235], [150, 130, 240]) },
-    'cartwheel':    { mode: 'galaxy',    opts: { arms: 9, ring: 0.14, spokes: 0.3, pitchAngle: 1.2, omega: 0.08 }, palette: P([90, 140, 255], [180, 200, 255], [255, 230, 170], [120, 150, 255]) },
-    'cigar':        { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.1, wind: 5, plume: 0.75 }, palette: P([200, 150, 120], [255, 90, 60], [255, 240, 210], [220, 120, 90]) },
+    'andromeda':    { mode: 'galaxy',    opts: { arms: 2, tilt: 0.5, wind: 4.4 },   palette: P([90, 120, 255], [180, 190, 255], [255, 235, 200], [120, 120, 220]) },
+    'whirlpool':    { mode: 'galaxy',    opts: { arms: 2, tilt: 1.35, wind: 3 },    palette: P([70, 110, 255], [215, 200, 255], [255, 240, 220], [150, 120, 255]) },
+    'sombrero':     { mode: 'galaxy',    opts: { arms: 2, tilt: 0.14, wind: 5 },    palette: P([150, 120, 200], [235, 215, 200], [255, 245, 225], [190, 160, 180]) },
+    'pinwheel':     { mode: 'galaxy',    opts: { arms: 4, tilt: 1.45, wind: 2.6, knots: 0.16, scatter: 1.3 }, palette: P([80, 130, 255], [190, 205, 255], [255, 240, 205], [110, 130, 240]) },
+    'triangulum':   { mode: 'galaxy',    opts: { arms: 2, tilt: 1.1, wind: 2.4, scatter: 2.2, knots: 0.18 }, palette: P([100, 150, 255], [200, 215, 255], [240, 245, 255], [120, 150, 240]) },
+    'bodes':        { mode: 'galaxy',    opts: { arms: 2, tilt: 1.0, wind: 3.8 },    palette: P([120, 130, 230], [230, 205, 170], [255, 235, 180], [200, 170, 140]) },
+    'southern-pinwheel': { mode: 'galaxy', opts: { arms: 3, bar: 0.3, tilt: 1.3, wind: 2.8, knots: 0.14 }, palette: P([90, 130, 255], [210, 200, 240], [255, 238, 200], [140, 130, 240]) },
+    'ngc-1300':     { mode: 'galaxy',    opts: { arms: 2, bar: 0.5, tilt: 1.2, wind: 2.2, scatter: 0.7 }, palette: P([90, 120, 255], [200, 190, 240], [255, 230, 190], [130, 120, 230]) },
+    'magellanic':   { mode: 'galaxy',    opts: { arms: 1, bar: 0.45, tilt: 1.2, wind: 1.5, scatter: 2.4, knots: 0.2, omega: 0.1 }, palette: P([110, 140, 255], [220, 200, 240], [255, 225, 235], [150, 130, 240]) },
+    'cartwheel':    { mode: 'galaxy',    opts: { arms: 9, ring: 0.14, spokes: 0.3, tilt: 1.2, omega: 0.08 }, palette: P([90, 140, 255], [180, 200, 255], [255, 230, 170], [120, 150, 255]) },
+    'cigar':        { mode: 'galaxy',    opts: { arms: 2, tilt: 0.1, wind: 5, plume: 0.75 }, palette: P([200, 150, 120], [255, 90, 60], [255, 240, 210], [220, 120, 90]) },
     // nebulae
     'orion':        { mode: 'nebula' },
     'crab-nebula':  { mode: 'nebula',    opts: { clouds: 4, starN: 1 },                  palette: P([60, 180, 140], [255, 120, 80], [255, 240, 220], [200, 90, 120]) },
@@ -1111,7 +1112,7 @@
   }
 
   return {
-    version: '0.9.2',
+    version: '0.9.3',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
