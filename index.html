@@ -85,7 +85,7 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow" id="eyebrow">ephemeris 0.9.1 · celestial stipple</div>
+    <div class="eyebrow" id="eyebrow">ephemeris 0.9.2 · celestial stipple</div>
     <h1>Ephemeris</h1>
     <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!! <b>No dependencies</b>,
       one script. Ten kinds of body and forty-two named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
@@ -100,13 +100,13 @@ a{color:var(--probe)}
       <div class="ctl">
         <label><b>Body</b><select id="pgBody"></select><span></span></label>
         <label><b>Size</b><input type="range" id="pgSize" min="20" max="640" step="4" value="240"><output id="pgSizeOut">240</output></label>
+        <div class="knobs" id="pgKnobs"></div>
         <label><b>Shape</b><select id="pgRatio"><option value="1">square</option><option value="2">2:1 wide</option><option value="1.333">4:3</option></select><span></span></label>
         <div class="flags">
           <label><input type="checkbox" id="pgInk"> ink</label>
           <label><input type="checkbox" id="pgLite"> lite</label>
           <label><input type="checkbox" id="pgSpace"> space</label>
         </div>
-        <div class="knobs" id="pgKnobs"></div>
         <div class="swatches" id="pgColors"></div>
         <div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span class="meta" style="text-align:left">six css variables, read live</span><button class="reset" id="pgReset">reset colours</button></div>
         <div class="snip"><pre id="pgSnip"></pre><button id="pgCopy">Copy</button></div>
@@ -404,8 +404,8 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const KNOBS = { spin: [0.05, 8, 0.05, 'spin'], tilt: [0, 1.5, 0.01, 'tilt'], period: [2, 40, 1, 'period'],
-                  arms: [1, 6, 1, 'arms'], clouds: [1, 8, 1, 'clouds'], stars: [0, 12, 1, 'stars'], phase: [0, 1, 0.01, 'phase'] };
+  const KNOBS = { spin: [0.05, 8, 0.05, 'Spin'], tilt: [0, 1.5, 0.01, 'Tilt'], period: [2, 40, 1, 'Period'],
+                  arms: [1, 6, 1, 'Arms'], clouds: [1, 8, 1, 'Clouds'], stars: [0, 12, 1, 'Stars'], phase: [0, 1, 0.01, 'Phase'] };
   // only spin and tilt get sliders; period, phase, arms, clouds, stars stay in the README for people to find
   { const eb = document.getElementById('eyebrow'); if (eb) eb.firstChild.data = 'ephemeris ' + Ephemeris.version + ' · celestial stipple'; }
   const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: [], supernova: [], eclipse: ['spin'],

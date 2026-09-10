@@ -1,4 +1,4 @@
-/*! ephemeris 0.9.1 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.9.2 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -283,7 +283,9 @@
     const scat = o.scatter ?? 1, knotAt = 1 - (o.knots ?? 0.07), r0 = R * (bar || 0.13);
     const pitch = (o.pitchAngle ?? 1.0) + 0.05 * Math.sin(t * 0.11);   // camera elevation, 0 = edge-on
     const proj = makeProj(0.25 + 0.06 * Math.sin(t * 0.05), pitch, 0, 0, 1);
-    const turn = t * (o.omega ?? 0.18);                  // pattern rotation
+    // Arms trail: the pattern turns against the way the spiral winds outward, so the tips sweep
+    // backwards. Turning it the other way gives a leading spiral, which real galaxies do not do.
+    const turn = -t * (o.omega ?? 0.18);                 // pattern rotation
     const N = o.n ?? Math.round(420 * countScale(size, 1.3, 20) * (o.ink ? 0.45 : 1) * lite);
     const rMin = 0.3;
 
@@ -1109,7 +1111,7 @@
   }
 
   return {
-    version: '0.9.1',
+    version: '0.9.2',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

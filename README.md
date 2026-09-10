@@ -102,7 +102,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.1/dist/ephemeris.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.2/dist/ephemeris.min.js"></script>
 ```
 
 ### Take one body only
@@ -111,7 +111,7 @@ Every body also ships as its own file, carrying the shared core and that body's 
 else. If you only want Saturn, download only Saturn.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.1/dist/saturn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.2/dist/saturn.min.js"></script>
 <canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
 ```
 
