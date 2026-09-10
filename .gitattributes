@@ -1,2 +1,3 @@
 tools/** linguist-vendored
 docs/** linguist-documentation
+dist/** linguist-generated

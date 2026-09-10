@@ -99,11 +99,34 @@ Every `canvas.orb` on the page is wired up on load. For canvases added later:
 Ephemeris.register(someRoot);   // default: document
 ```
 
-Or from a CDN, pinned to a commit or tag:
+Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.8.1/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.0/dist/ephemeris.min.js"></script>
 ```
+
+### Take one body only
+
+Every body also ships as its own file, carrying the shared core and that body's renderer and nothing
+else. If you only want Saturn, download only Saturn.
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.0/dist/saturn.min.js"></script>
+<canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
+```
+
+The API is identical, so `Ephemeris.body('saturn', …)`, the data attributes and the CSS variables all
+work the same. Only the other 41 bodies are missing.
+
+| file | over the wire |
+|---|---|
+| `dist/ephemeris.min.js`, all 42 | 13.4 KB gzip, 11.5 KB brotli |
+| `dist/saturn.min.js`, one body | 4.7 KB gzip |
+| `dist/gargantua.min.js`, one body | 3.6 KB gzip |
+| `dist/andromeda.min.js`, one body | 3.8 KB gzip |
+
+`src/ephemeris.js` is the readable original and still works as a drop-in if you prefer comments over
+bytes. Build the whole of `dist/` with `npm install && npm run build`.
 
 ### Markup
 

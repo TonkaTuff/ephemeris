@@ -1,15 +1,40 @@
 {
   "name": "ephemeris-orbs",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Celestial stipple: black hole, pulsar, galaxy, nebula, comet, saturn, supernova, binary, eclipse, with named bodies from the Milky Way to the Moon. Canvas 2D dots, no dependencies.",
   "main": "src/ephemeris.js",
-  "files": ["src/ephemeris.js", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "check": "node -e \"require('./src/ephemeris.js'); console.log('ok')\"",
-    "serve": "python -m http.server 8080"
+    "serve": "python -m http.server 8080",
+    "build": "node tools/build.js"
   },
-  "keywords": ["canvas", "animation", "orb", "spinner", "loading", "black-hole", "pulsar", "galaxy", "stipple", "celestial"],
+  "keywords": [
+    "canvas",
+    "animation",
+    "orb",
+    "spinner",
+    "loading",
+    "black-hole",
+    "pulsar",
+    "galaxy",
+    "stipple",
+    "celestial"
+  ],
   "author": "TonkaTuff",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/TonkaTuff/ephemeris.git" }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TonkaTuff/ephemeris.git"
+  },
+  "devDependencies": {
+    "terser": "^5.36.0"
+  },
+  "unpkg": "dist/ephemeris.min.js",
+  "jsdelivr": "dist/ephemeris.min.js"
 }

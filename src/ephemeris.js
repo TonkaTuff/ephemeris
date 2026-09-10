@@ -1,4 +1,4 @@
-/*! ephemeris 0.8.1 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.9.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -90,6 +90,14 @@
     ctx.strokeStyle = 'rgba(160,170,210,0.18)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.roundRect(cx - W / 2 + half - R + 0.5, half - R + 0.5, W - 2 * (half - R) - 1, 2 * R - 1, R - 0.5); ctx.stroke();
   }
+  const frac = v => v - Math.floor(v);
+  // 2-d value noise, smooth, for the drift
+  const noise = (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y); let fx = x - xi, fy = y - yi;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    const a = E(xi, yi), b = E(xi + 1, yi), c = E(xi, yi + 1), d = E(xi + 1, yi + 1);
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+  };
 
   /* ================================================================== blackhole */
   // Interstellar's Gargantua. Edge-on accretion disk on Keplerian orbits, far side lensed over the top
@@ -343,13 +351,6 @@
   // slow noise field, lit from inside by a handful of young stars. Wisps come from stretching each
   // cloud along its own axis. Each cloud swirls slowly about its own centre while the field drifts.
   const ORION = { cold: [75, 63, 191], mid: [208, 90, 160], hot: [255, 217, 194], glow: [138, 79, 208], ring: [255, 255, 255], shadow: [0, 0, 0] };
-  // 2-d value noise, smooth, for the drift
-  const noise = (x, y) => {
-    const xi = Math.floor(x), yi = Math.floor(y); let fx = x - xi, fy = y - yi;
-    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
-    const a = E(xi, yi), b = E(xi + 1, yi), c = E(xi, yi + 1), d = E(xi + 1, yi + 1);
-    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
-  };
   function drawNebula(ctx, size, t, dark, o = {}) {
     const W = o.w ?? size, half = size / 2, cx = W / 2;
     const ink = !!o.ink, pal = buildPal(o.palette || ORION);
@@ -441,7 +442,6 @@
   // Nucleus down-left, two tails streaming up-right away from an off-canvas sun: a broad curved dust
   // tail and a narrow, faster, flickering ion tail. Particles are born at the nucleus and age out.
   const HALLEY = { cold: [47, 125, 255], mid: [159, 208, 255], hot: [255, 248, 230], glow: [111, 176, 255], ring: [255, 255, 255], shadow: [0, 0, 0] };
-  const frac = v => v - Math.floor(v);
   function drawComet(ctx, size, t, dark, o = {}) {
     const W = o.w ?? size, half = size / 2, cx = W / 2;
     const ink = !!o.ink, pal = buildPal(o.palette || HALLEY);
@@ -1100,7 +1100,7 @@
   }
 
   return {
-    version: '0.8.1',
+    version: '0.9.0',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
