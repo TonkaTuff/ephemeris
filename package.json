@@ -1,7 +1,7 @@
 {
   "name": "ephemeris-orbs",
   "version": "0.1.0",
-  "description": "Celestial thinking-orbs: black hole, pulsar, galaxy. Canvas 2D dots, no dependencies.",
+  "description": "Celestial thinking-orbs: black hole, pulsar, galaxy, nebula. Canvas 2D dots, no dependencies.",
   "main": "src/ephemeris.js",
   "files": ["src/ephemeris.js", "README.md", "LICENSE"],
   "scripts": {

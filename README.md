@@ -10,6 +10,7 @@ Three bodies so far:
 | `blackhole` | pondering | Interstellar's Gargantua: edge-on accretion disk, far side lensed over the top and under the bottom, photon ring, Doppler-bright on the approaching side |
 | `pulsar` | pinging | a neutron star as a lighthouse: spinning core, two beams on a tilted magnetic axis, dipole field lines, a flare each time a beam sweeps the camera |
 | `galaxy` | swirling | a spiral at a tilt: logarithmic arms, bright flattened bulge, dust scatter, bright knots, the pattern turning slowly |
+| `nebula` | dreaming | an emission nebula: overlapping gas clouds as soft drifting dots, stretched into wisps, lit from inside by a few young stars |
 
 **Demo:** open `index.html`, or https://tonkatuff.github.io/ephemeris once Pages is on.
 
@@ -48,6 +49,8 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design) |
 | `data-orb-spin` | number | pulsar spin rate, rad/s (default 4.2) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt, rad (default 0.62) |
+| `data-orb-clouds` | number | nebula cloud count (default 5) |
+| `data-orb-stars` | number | nebula star count (default scales with size, 3 at 64) |
 
 Flags stack: `data-orb-lite=1 data-orb-space=1` on a `320×160` is fine.
 
@@ -69,7 +72,8 @@ canvas.orb {
 ```
 
 Defaults per mode: blackhole is ember (`#FF781E` → `#FFB782` → `#FFF6E6`, glow `#FFA546`), pulsar is
-cobalt (above), galaxy is milky way (`#4D6BFF` → `#C9B8FF` → `#FFF3D6`, glow `#8A7CFF`).
+cobalt (above), galaxy is milky way (`#4D6BFF` → `#C9B8FF` → `#FFF3D6`, glow `#8A7CFF`), nebula is
+orion (`#4B3FBF` → `#D05AA0` → `#FFD9C2`, glow `#8A4FD0`).
 
 ### JavaScript
 
@@ -100,7 +104,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 ## Roadmap
 
-nebula (dreaming) · comet (rushing) · saturn (orbiting) · supernova (erupting) · binary (pairing) · eclipse (aligning)
+comet (rushing) · saturn (orbiting) · supernova (erupting) · binary (pairing) · eclipse (aligning)
 
 ## Name
 

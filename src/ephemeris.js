@@ -319,11 +319,110 @@
     if (o.space) paintRim(ctx, W, size);
   }
 
+  /* ================================================================== nebula */
+  // An emission nebula: a few overlapping gas clouds drawn as soft, low-alpha dots that drift on a
+  // slow noise field, lit from inside by a handful of young stars. Wisps come from stretching each
+  // cloud along its own axis. Dreamy by design: nothing here moves fast.
+  const ORION = { cold: [75, 63, 191], mid: [208, 90, 160], hot: [255, 217, 194], glow: [138, 79, 208], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  // 2-d value noise, smooth, for the drift
+  const noise = (x, y) => {
+    const xi = Math.floor(x), yi = Math.floor(y); let fx = x - xi, fy = y - yi;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    const a = E(xi, yi), b = E(xi + 1, yi), c = E(xi, yi + 1), d = E(xi + 1, yi + 1);
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+  };
+  function drawNebula(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || ORION);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1;
+    const Rx = W * 0.46, Ry = size * 0.46, R = Math.min(Rx, Ry);
+    const N = o.n ?? Math.round(360 * countScale(size, 1.3, 20) * Math.sqrt(Rx / Ry) * (ink ? 0.4 : 1) * lite);
+    const K = o.clouds ?? 5, NS = o.starN ?? Math.max(3, Math.round(5 * countScale(size, 0.6, 4)));
+    const slow = t * (o.omega ?? 0.05);
+    const rMin = 0.3;
+
+    // clouds: centre, radius, stretch axis, base heat; centres breathe slowly
+    const clouds = [];
+    for (let k = 0; k < K; k++) {
+      const a = E(k, 11.3) * TAU + slow * 0.4;
+      clouds.push({
+        x: Math.cos(a) * Rx * (0.15 + 0.4 * E(k, 12.1)) + 0.06 * R * Math.sin(t * 0.07 + k),
+        y: Math.sin(a) * Ry * (0.15 + 0.4 * E(k, 13.7)) + 0.06 * R * Math.cos(t * 0.05 + k * 1.3),
+        r: R * (0.28 + 0.34 * E(k, 14.9)),
+        ax: E(k, 15.2) * Math.PI, st: 1.3 + 0.9 * E(k, 16.4),
+        heat: 0.25 + 0.5 * E(k, 17.8)
+      });
+    }
+    // stars: fixed inside the cloud, each lights what's near it
+    const stars = [];
+    for (let s = 0; s < NS; s++) {
+      const c = clouds[s % K];
+      stars.push({ x: c.x + (E(s, 21.1) - 0.5) * c.r * 0.9, y: c.y + (E(s, 22.3) - 0.5) * c.r * 0.9,
+                   tw: 0.75 + 0.25 * Math.sin(t * (1.1 + E(s, 23.5)) + s * 2.1), big: E(s, 24.7) });
+    }
+    const lit = (x, y) => {   // 0..1, how close to the nearest star, in cloud radii
+      let best = 0;
+      for (const s of stars) { const d = Math.hypot(x - s.x, y - s.y) / (R * 0.45); const v = Math.max(0, 1 - d); if (v > best) best = v; }
+      return best * best;
+    };
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {   // diffuse gas: one soft gradient per cloud, then a warm bloom per star
+      for (const c of clouds) {
+        const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r * 1.5);
+        g.addColorStop(0, rgba(ramp(pal.ramp, c.heat), 0.16)); g.addColorStop(1, rgba(pal.glow, 0));
+        ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+      }
+      for (const s of stars) {
+        const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, R * (0.16 + 0.1 * s.big));
+        g.addColorStop(0, rgba(pal.ramp[2], 0.35 * s.tw)); g.addColorStop(1, rgba(pal.ramp[2], 0));
+        ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+      }
+    }
+
+    // gas dots: gaussian around a cloud centre, stretched along the cloud's axis, drifting on noise
+    for (let i = 0; i < N; i++) {
+      const c = clouds[i % K];
+      const u = Math.max(1e-4, E(i, 1.1)), v = E(i, 2.2) * TAU;
+      const g = Math.min(2.6, Math.sqrt(-2 * Math.log(u))) * 0.42;          // radial gaussian
+      let lx = Math.cos(v) * g * c.r * c.st, ly = Math.sin(v) * g * c.r / c.st;
+      const ca = Math.cos(c.ax), sa = Math.sin(c.ax);
+      let x = c.x + lx * ca - ly * sa, y = c.y + lx * sa + ly * ca;
+      x += (noise(i * 0.37, slow + i * 0.011) - 0.5) * 0.28 * R;         // drift
+      y += (noise(i * 0.53 + 40, slow * 0.8 + i * 0.013) - 0.5) * 0.28 * R;
+      const edge = clamp01(g / 1.1);                                       // 0 core .. 1 fringe
+      const L = lit(x, y);
+      const heat = clamp01(c.heat * (1 - edge) + 0.6 * L);
+      const a = ink ? 0.55 + 0.45 * (1 - edge) : (0.05 + 0.16 * (1 - edge) + 0.22 * L) * (0.7 + 0.3 * noise(i * 0.19, t * 0.15));
+      const rr = Math.max(rMin, (1.2 + 1.8 * (1 - edge) + 1.4 * L) * M);
+      dot(x, y, rr, ink ? null : ramp(pal.ramp, heat), a, 0.34 + 0.34 * edge - 0.2 * L);
+    }
+    // the stars themselves
+    for (const s of stars) {
+      const rr = Math.max(rMin, (1.6 + 1.6 * s.big) * M);
+      if (!ink && size >= 48) {   // faint diffraction spikes
+        ctx.strokeStyle = rgba(pal.ramp[2], 0.18 * s.tw); ctx.lineWidth = Math.max(0.5, 0.6 * M);
+        const L2 = rr * (4 + 3 * s.big);
+        ctx.beginPath(); ctx.moveTo(s.x - L2, s.y); ctx.lineTo(s.x + L2, s.y); ctx.moveTo(s.x, s.y - L2); ctx.lineTo(s.x, s.y + L2); ctx.stroke();
+      }
+      dot(s.x, s.y, rr, pal.ramp[2], ink ? 1 : 0.95 * s.tw, 0.04);
+      if (!ink) dot(s.x, s.y, rr * 0.55, [255, 255, 255], 0.9 * s.tw, 0.04);
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
   /* ================================================================== registry + driver */
   const MODES = {
     blackhole: { draw: drawBlackHole, defaults: EMBER,    state: 'pondering' },
     pulsar:    { draw: drawPulsar,    defaults: COBALT,   state: 'pinging' },
-    galaxy:    { draw: drawGalaxy,    defaults: MILKYWAY, state: 'swirling' }
+    galaxy:    { draw: drawGalaxy,    defaults: MILKYWAY, state: 'swirling' },
+    nebula:    { draw: drawNebula,    defaults: ORION,    state: 'dreaming' }
   };
   const STATE_TO_MODE = Object.fromEntries(Object.entries(MODES).map(([m, v]) => [v.state, m]));
 
@@ -353,7 +452,8 @@
     if (!ctx) return;
     const ds = canvas.dataset;
     const opts = { w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1',
-                   arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt) };
+                   arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
+                   clouds: num(ds.orbClouds), starN: num(ds.orbStars) };
     const paint = t => {
       opts.palette = readPalette(canvas, mode.defaults);     // every frame, so themes and :hover apply live
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, size);

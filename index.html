@@ -60,8 +60,8 @@ a{color:var(--probe)}
     <div class="eyebrow">ephemeris 0.1.0 · celestial thinking-orbs</div>
     <h1>Ephemeris</h1>
     <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
-      one script, the same draw contract as <code>thinking-orbs</code>. Three bodies so far: a black hole,
-      a pulsar, a galaxy. Colour them with six CSS variables, or run them monochrome.</p>
+      one script, the same draw contract as <code>thinking-orbs</code>. Four bodies so far: a black hole,
+      a pulsar, a galaxy, a nebula. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
   <section>
@@ -98,6 +98,25 @@ a{color:var(--probe)}
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="galaxy" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="galaxy"></canvas></div><div class="nm">wide</div><div class="meta">160×88</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><h2>Nebula</h2><span class="tag">mode nebula · state dreaming</span></div>
+    <p class="note">An emission nebula: overlapping gas clouds as soft dots drifting on a slow noise field,
+      stretched into wisps, lit from inside by a few young stars with faint diffraction spikes. Nothing
+      here moves fast. <code>data-orb-clouds</code> and <code>data-orb-stars</code> set the counts.</p>
+    <div class="hero">
+      <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="nebula"></canvas></div><div class="nm">nebula · 160</div><div class="meta">5 clouds · orion</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="nebula"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="64" height="64" data-orb-mode="nebula"></canvas></div><div class="nm">64</div><div class="meta">the preset</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="20" height="20" data-orb-mode="nebula"></canvas></div><div class="nm">20</div><div class="meta">inline</div></div>
+    </div>
+    <div class="row">
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="nebula" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="nebula" data-orb-clouds="3" data-orb-stars="1"></canvas></div><div class="nm">one star</div><div class="meta">data-orb-clouds=3 · data-orb-stars=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="nebula" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="nebula"></canvas></div><div class="nm">wide</div><div class="meta">160×88</div></div>
     </div>
   </section>
 
@@ -183,7 +202,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
 
   <footer>
     <p>Ephemeris: the table that tells you where every body in the sky is at a given time. MIT.</p>
-    <p>Roadmap: nebula (dreaming), comet (rushing), saturn (orbiting), supernova (erupting), binary (pairing), eclipse (aligning).</p>
+    <p>Roadmap: comet (rushing), saturn (orbiting), supernova (erupting), binary (pairing), eclipse (aligning).</p>
   </footer>
 </div>
 <script src="src/ephemeris.js"></script>
