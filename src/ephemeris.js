@@ -1,4 +1,4 @@
-/*! ephemeris 0.8.1 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.8.1 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();

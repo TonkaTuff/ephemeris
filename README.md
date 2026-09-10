@@ -1,6 +1,6 @@
 # Ephemeris
 
-Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
+Celestial stipple: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
 <p align="center"><img src="docs/gargantua.gif" width="640" alt="Gargantua: an edge-on accretion disk of dots, the far side lensed over the top"></p>
