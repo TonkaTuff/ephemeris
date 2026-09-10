@@ -1,4 +1,4 @@
-/*! ephemeris 0.9.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.9.1 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -787,6 +787,8 @@
   /* ================================================================== eclipse */
   // A dotted sun with a corona of streamers; the moon crosses it on `period` seconds. The corona is
   // only really visible near totality, and there is a diamond ring either side of it.
+  // The photosphere turns on `spin` (radians a second): dots, granulation and sunspots all ride the
+  // surface, so spots rise at one limb and set at the other. spin:0 holds it still.
   const CORONA = { cold: [255, 179, 71], mid: [255, 232, 176], hot: [255, 255, 255], glow: [255, 195, 107], ring: [255, 255, 255], shadow: [0, 0, 0] };
   function drawEclipse(ctx, size, t, dark, o = {}) {
     const W = o.w ?? size, half = size / 2, cx = W / 2;
@@ -799,8 +801,14 @@
     const mx = hasMoon ? (e - 0.5) * Rs * 5.2 : 1e9, my = hasMoon ? -0.25 * Rs + 0.5 * Rs * (e - 0.5) : 1e9;
     const gap = Math.hypot(mx, my);
     const total = hasMoon ? clamp01(1 - gap / (Rs * 0.35)) : 0;
-    // sunspots drift across the face with the rotation; dots inside are simply not drawn
-    const spots = o.spots ? [0, 1, 2].map(k => ({ x: Rs * 0.85 * Math.sin(t * 0.04 + k * 2.1), y: Rs * (E(k, 52.3) - 0.5) * 0.9, r: Rs * (0.05 + 0.05 * E(k, 53.1)) })) : null;
+    const spin = o.spin ?? 0.12, rot = t * spin, cr = Math.cos(rot), sr = Math.sin(rot);
+    // sunspots sit at a fixed longitude and latitude and turn with the surface; dots inside are simply
+    // not drawn. Anything on the far side is dropped, and what is near the limb is foreshortened.
+    const spots = o.spots ? [0, 1, 2].map(k => {
+      const lat = (E(k, 52.3) - 0.5) * 1.1, lon = E(k, 52.9) * TAU + rot, cl = Math.cos(lat);
+      return { x: cl * Math.sin(lon) * Rs, y: Math.sin(lat) * Rs, z: cl * Math.cos(lon),
+               r: Rs * (0.05 + 0.05 * E(k, 53.1)) };
+    }).filter(sp => sp.z > 0.05).map(sp => ({ ...sp, r: sp.r * (0.4 + 0.6 * sp.z) })) : null;
     const NS = Math.round(160 * countScale(size, 1.2, 12) * (ink ? 0.5 : 1) * lite);
     const NST = Math.round(22 * countScale(size, 0.7, 4)), NPER = Math.round(10 * countScale(size, 0.8, 5) * lite);
     const inMoon = hasMoon ? (x, y) => Math.hypot(x - mx, y - my) < Rm : () => false;
@@ -831,15 +839,16 @@
     }
     // photosphere with limb darkening
     for (let i = 0; i < NS; i++) {
-      const d = fib(i, NS); if (d[2] < 0) continue;
-      const x = d[0] * Rs, y = d[1] * Rs, C = d[2];
+      const d = fib(i, NS);
+      const C = d[2] * cr - d[0] * sr; if (C < 0) continue;                    // turn, then drop the far side
+      const x = (d[0] * cr + d[2] * sr) * Rs, y = d[1] * Rs;
       if (inMoon(x, y)) continue;
       let a = ink ? 1 : 0.6 + 0.4 * C;
       if (spots) {
         let pen = 1;
         for (const sp of spots) { const dd = Math.hypot(x - sp.x, y - sp.y); if (dd < sp.r) { pen = 0; break; } if (dd < sp.r * 1.9) pen = Math.min(pen, 0.45); }
         if (!pen) continue;
-        a *= pen * (0.72 + 0.28 * noise(x / Rs * 4 + t * 0.1, y / Rs * 4));   // granulation
+        a *= pen * (0.72 + 0.28 * noise(d[0] * 4 + d[2] * 4, d[1] * 4 + t * 0.06));   // granulation, riding the surface
       }
       dot(x, y, Math.max(rMin, (0.9 + 1.2 * C) * M), ink ? null : ramp(pal.ramp, 0.6 + 0.4 * C), a, 0.2 - 0.14 * C);
     }
@@ -847,7 +856,7 @@
     if (!hasMoon || total > 0.2) {
       const pa = hasMoon ? total : 0.85;
       for (let k = 0; k < 4; k++) {
-        const a = E(k, 31.7) * TAU + t * 0.05, r = Rs * (1.02 + 0.08 * E(k, 32.9) * (0.7 + 0.3 * Math.sin(t * 1.3 + k)));
+        const a = E(k, 31.7) * TAU + rot * 0.4, r = Rs * (1.02 + 0.08 * E(k, 32.9) * (0.7 + 0.3 * Math.sin(t * 1.3 + k)));
         const x = Math.cos(a) * r, y = Math.sin(a) * r;
         if (!inMoon(x, y)) dot(x, y, Math.max(rMin, 1.3 * M), pal.ramp[0], (ink ? 1 : 0.8) * pa, 0.2);
       }
@@ -1100,7 +1109,7 @@
   }
 
   return {
-    version: '0.9.0',
+    version: '0.9.1',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

@@ -102,7 +102,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.0/dist/ephemeris.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.1/dist/ephemeris.min.js"></script>
 ```
 
 ### Take one body only
@@ -111,7 +111,7 @@ Every body also ships as its own file, carrying the shared core and that body's 
 else. If you only want Saturn, download only Saturn.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.0/dist/saturn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.1/dist/saturn.min.js"></script>
 <canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
 ```
 
@@ -142,7 +142,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design, spoke count on a ring galaxy) |
-| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
+| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), sun rotation (0.12), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
 | `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` `pluto` | planet surface on the saturn mode |
@@ -192,7 +192,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
 (`arms`, `wind`, `pitchAngle`, `omega`, `bar`, `ring`, `spokes`, `scatter`, `knots`, `plume` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
-pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
+pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius`, `spin` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour
