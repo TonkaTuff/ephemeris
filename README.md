@@ -3,6 +3,19 @@
 Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
+<p align="center"><img src="docs/gargantua.gif" width="640" alt="Gargantua: an edge-on accretion disk of dots, the far side lensed over the top"></p>
+<p align="center">
+  <img src="docs/andromeda.png" width="110" alt="Andromeda">
+  <img src="docs/saturn.png" width="110" alt="Saturn">
+  <img src="docs/orion.png" width="110" alt="Orion nebula">
+  <img src="docs/crab-pulsar.png" width="110" alt="Crab pulsar">
+  <img src="docs/earth.png" width="110" alt="Earth">
+  <img src="docs/cartwheel.png" width="110" alt="Cartwheel galaxy">
+  <img src="docs/andromeda-ink.png" width="110" alt="Andromeda in ink, monochrome on a light ground">
+</p>
+<p align="center"><sub>Gargantua on a wide canvas, then Andromeda, Saturn, Orion, the Crab pulsar, Earth, the Cartwheel, and Andromeda in ink.
+These are stills; every one of them moves. See them live on the <a href="https://tonkatuff.github.io/ephemeris/">demo and playground</a>.</sub></p>
+
 Ten kinds of body, and named presets for forty-two real ones:
 
 | mode | state | what you see |
