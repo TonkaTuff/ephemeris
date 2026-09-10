@@ -1,4 +1,4 @@
-/*! ephemeris 0.2.0 — celestial thinking-orbs. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.3.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -23,7 +23,7 @@
       return [cx + x1 * s, cy - y2 * s, z2];
     };
   };
-  // engine dot-size rule, from thinking-orbs
+  // dot-size rule shared with thinking-orbs, so sizes match
   const radiusScale = size => (size / 300) ** 0.6;
   const countScale = (size, pow, cap) => Math.min(cap, Math.max(0.25, (size / 64) ** pow));
 
@@ -60,7 +60,7 @@
   };
 
   /* ------------------------------------------------------------------ shared painters */
-  // One dot. Colour modes use `col`; ink uses `white` with the thinking-orbs convention (0 = full ink,
+  // One dot. Colour modes use `col`; ink uses `white`, the thinking-orbs convention (0 = full ink,
   // inverted on a dark ground).
   const dotPainter = (ctx, ink, dark) => (x, y, r, col, a, white) => {
     if (a < 0.02) return;
@@ -493,9 +493,15 @@
     const W = o.w ?? size, half = size / 2, cx = W / 2;
     const ink = !!o.ink, pal = buildPal(o.palette || SATURN);
     const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
-    const Rp = Math.min(size * 0.2, W * 0.2);
+    const Rp = Math.min(size, W) * (o.rings === false ? 0.36 : 0.2);          // ringless globes fill the orb
     const proj = makeProj(0.12 * Math.sin(t * 0.05), (o.tilt ?? 0.42) + 0.04 * Math.sin(t * 0.08), 0, 0, 1);
     const spin = t * (o.spin ?? 0.35);
+    // surface: 'bands' (gas giant), 'moon' (maria + craters), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps)
+    const surf = o.surface || 'bands';
+    // phase: sun angle in camera space. undefined = lit from the camera; a number 0..1 (0 full, 0.5 new);
+    // 'cycle' waxes and wanes over `period` seconds
+    const phase = o.phase === 'cycle' ? frac(t / (o.period ?? 24)) : o.phase;
+    const sunA = phase == null ? null : phase * TAU;
     const LAT = Math.min(40, Math.max(6, Math.round(15 * (size / 64) ** 0.5 * Math.sqrt(lite))));
     const LON = Math.min(120, Math.max(10, Math.round(42 * (size / 64) ** 0.6 * Math.sqrt(lite))));
     const BANDS = [[1.28, 1.55, 0.45], [1.58, 1.95, 1], [2.02, 2.32, 0.7]];       // inner, outer, brightness
@@ -526,18 +532,54 @@
         ink ? 0.5 + 0.5 * bright : 0.25 + 0.6 * bright, 0.62 - 0.3 * bright]);
     }
     for (const d of back) dot(...d);
-    // planet, front hemisphere, banded
+    // planet, front hemisphere. Surface pattern is in body-fixed longitude so it turns with the spin.
     for (let la = 0; la <= LAT; la++) {
       const lat = -Math.PI / 2 + la / LAT * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
       const n = Math.max(1, Math.round(Math.abs(cl) * LON));
       const band = 0.72 + 0.28 * Math.sin(lat * 9 + E(la, 5.5) * 2);
       for (let lo = 0; lo < n; lo++) {
-        const ph = lo / n * TAU + spin;
+        const lon = lo / n * TAU, ph = lon + spin;
         const [x, y, z] = proj(cl * Math.cos(ph) * Rp, sl * Rp, cl * Math.sin(ph) * Rp);
         if (z < 0.02) continue;
         const C = z / Rp;
-        dot(x, y, Math.max(rMin, (0.6 + 1.3 * C) * M), ink ? null : ramp(pal.ramp, 0.42 + 0.3 * band + 0.25 * C),
-            ink ? 0.7 + 0.3 * C : 0.35 + 0.6 * C * band, 0.58 - 0.4 * C - 0.1 * band);
+        const lit = sunA == null ? C : Math.max(0, (x / Rp) * Math.sin(sunA) + C * Math.cos(sunA));
+        let heat, a, white, rr = 0.6 + 1.3 * C;
+        if (surf === 'moon') {
+          const mare = noise(lat * 2.4 + 7, lon * 2.4) > 0.58, crater = noise(lat * 9 + 3, lon * 9) > 0.82;
+          heat = mare ? 0.12 : crater ? 0.35 : 0.55 + 0.3 * noise(lat * 5, lon * 5);
+          a = ink ? 0.25 + 0.75 * lit : 0.06 + 0.9 * lit;                                  // dark side = earthshine
+          white = (mare ? 0.55 : 0.3) + 0.3 * (1 - lit);
+        } else if (surf === 'earth') {
+          const land = noise(lat * 1.8 + 11, lon * 1.8) > 0.53, ice = Math.abs(lat) > 1.15;
+          heat = ice ? 0.95 : land ? 0.45 + 0.2 * noise(lat * 6, lon * 6) : 0.04 + 0.08 * noise(lat * 4, lon * 4);
+          a = ink ? (land || ice ? 0.9 : 0.45) * (0.3 + 0.7 * lit) : 0.12 + 0.85 * lit;
+          white = (ice ? 0.15 : land ? 0.3 : 0.62) + 0.25 * (1 - lit);
+        } else if (surf === 'mars') {
+          const dark = noise(lat * 2.2 + 50, lon * 2.2), cap = Math.abs(lat) > 1.28;
+          heat = cap ? 0.95 : 0.3 + 0.4 * dark;
+          a = ink ? 0.4 + 0.6 * lit : 0.1 + 0.85 * lit;
+          white = (cap ? 0.12 : 0.28 + 0.3 * (1 - dark)) + 0.25 * (1 - lit);
+        } else {
+          heat = 0.42 + 0.3 * band + 0.25 * C;
+          a = ink ? 0.7 + 0.3 * C : 0.35 + 0.6 * C * band;
+          white = 0.58 - 0.4 * C - 0.1 * band;
+        }
+        dot(x, y, Math.max(rMin, rr * M), ink ? null : ramp(pal.ramp, heat), a, white);
+      }
+    }
+    if (surf === 'earth') {   // clouds: a sparser layer on its own drift, only where the cloud noise is thick
+      const CL = Math.round(LAT * 0.7), CO = Math.round(LON * 0.7), cspin = spin * 1.12 + t * 0.03;
+      for (let la = 0; la <= CL; la++) {
+        const lat = -Math.PI / 2 + la / CL * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
+        const n = Math.max(1, Math.round(Math.abs(cl) * CO));
+        for (let lo = 0; lo < n; lo++) {
+          const lon = lo / n * TAU;
+          if (noise(lat * 2.6 + 30, lon * 2.6 - t * 0.02) < 0.6) continue;
+          const [x, y, z] = proj(cl * Math.cos(lon + cspin) * Rp * 1.02, sl * Rp * 1.02, cl * Math.sin(lon + cspin) * Rp * 1.02);
+          if (z < 0.05) continue;
+          const C = z / Rp, lit = sunA == null ? C : Math.max(0, (x / Rp) * Math.sin(sunA) + C * Math.cos(sunA));
+          dot(x, y, Math.max(rMin, (0.9 + 1.2 * C) * M), pal.ramp[2], ink ? 0.5 * lit : 0.08 + 0.55 * lit, 0.1 + 0.3 * (1 - lit));
+        }
       }
     }
     if (o.spot) {   // a great red spot: an oval of cold-colour dots riding the southern belt
@@ -793,6 +835,9 @@
     'saturn':       { mode: 'saturn' },
     'jupiter':      { mode: 'saturn',    opts: { rings: false, spot: true, spin: 0.55 }, palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
     'uranus':       { mode: 'saturn',    opts: { tilt: 1.35, spin: 0.25 },               palette: P([90, 170, 190], [180, 230, 235], [235, 250, 250], [120, 200, 210]) },
+    'earth':        { mode: 'saturn',    opts: { rings: false, surface: 'earth', phase: 0.12, spin: 0.3, tilt: 0.4 },  palette: P([25, 80, 190], [80, 150, 80], [240, 245, 250], [90, 150, 255]) },
+    'mars':         { mode: 'saturn',    opts: { rings: false, surface: 'mars', phase: 0.12, spin: 0.28, tilt: 0.35 }, palette: P([140, 55, 30], [215, 115, 60], [255, 240, 230], [220, 120, 70]) },
+    'moon':         { mode: 'saturn',    opts: { rings: false, surface: 'moon', phase: 'cycle', period: 24, spin: 0.06, tilt: 0.05 }, palette: P([105, 105, 115], [190, 190, 195], [245, 245, 245], [120, 120, 135]) },
     // supernovae
     'sn1987a':      { mode: 'supernova' },
     'cassiopeia-a': { mode: 'supernova', opts: { period: 8 },                            palette: P([60, 200, 170], [255, 110, 90], [255, 245, 230], [90, 170, 190]) },
@@ -831,7 +876,8 @@
     if (!ctx) return;
     const ds = canvas.dataset;
     const own = { arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
-                  clouds: num(ds.orbClouds), starN: num(ds.orbStars), period: num(ds.orbPeriod) };
+                  clouds: num(ds.orbClouds), starN: num(ds.orbStars), period: num(ds.orbPeriod),
+                  phase: ds.orbPhase === 'cycle' ? 'cycle' : num(ds.orbPhase), surface: ds.orbSurface };
     for (const k in own) if (own[k] === undefined) delete own[k];
     const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1' };
     const paint = t => {
@@ -866,7 +912,7 @@
   }
 
   return {
-    version: '0.2.0',
+    version: '0.3.0',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

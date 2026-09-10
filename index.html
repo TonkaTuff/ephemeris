@@ -57,10 +57,10 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow">ephemeris 0.2.0 · celestial thinking-orbs</div>
+    <div class="eyebrow">ephemeris 0.3.0 · dot-celestials</div>
     <h1>Ephemeris</h1>
     <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
-      one script, the same draw contract as <code>thinking-orbs</code>. Nine kinds of body and twenty-three named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
+      one script. Nine kinds of body and twenty-six named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
   <section id="bodies">
@@ -87,6 +87,9 @@ a{color:var(--probe)}
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="saturn"></canvas></div><div class="nm">Saturn</div><div class="meta">saturn · saturn</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="jupiter"></canvas></div><div class="nm">Jupiter</div><div class="meta">jupiter · saturn</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="uranus"></canvas></div><div class="nm">Uranus</div><div class="meta">uranus · saturn</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="earth"></canvas></div><div class="nm">Earth</div><div class="meta">earth · saturn · oceans, land, ice, clouds</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="mars"></canvas></div><div class="nm">Mars</div><div class="meta">mars · saturn · rust, polar caps</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="moon"></canvas></div><div class="nm">Moon</div><div class="meta">moon · saturn · maria, craters, phases</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="sn1987a"></canvas></div><div class="nm">SN 1987A</div><div class="meta">sn1987a · supernova</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="cassiopeia-a"></canvas></div><div class="nm">Cassiopeia A</div><div class="meta">cassiopeia-a · supernova</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-body="albireo"></canvas></div><div class="nm">Albireo</div><div class="meta">albireo · binary</div></div>
@@ -189,7 +192,7 @@ a{color:var(--probe)}
 
   <section>
     <div class="head"><h2>Saturn</h2><span class="tag">mode saturn · state orbiting</span></div>
-    <p class="note">A banded globe with three ring bands and the Cassini gap, tilted about 24°, rings on Keplerian speeds. Back-side ring dots hide behind the planet and dim in its shadow. <code>data-orb-tilt</code> for the ring angle, <code>data-orb-spin</code> for rotation.</p>
+    <p class="note">A banded globe with three ring bands and the Cassini gap, tilted about 24°, rings on Keplerian speeds. Back-side ring dots hide behind the planet and dim in its shadow. <code>data-orb-tilt</code> for the ring angle, <code>data-orb-spin</code> for rotation. <code>data-orb-surface</code> swaps the bands for <code>moon</code>, <code>earth</code> or <code>mars</code>; <code>data-orb-phase</code> (0 full, 0.5 new, or <code>cycle</code>) lights it from the side.</p>
     <div class="hero">
       <div class="cell big"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-mode="saturn"></canvas></div><div class="nm">saturn · 160</div><div class="meta">colour</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
@@ -201,6 +204,7 @@ a{color:var(--probe)}
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-tilt="1.35"></canvas></div><div class="nm">rings on edge</div><div class="meta">data-orb-tilt=1.35</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="saturn" data-orb-body="jupiter"></canvas></div><div class="nm">jupiter</div><div class="meta">data-orb-body=jupiter · no rings, a spot</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="160" data-orb-body="moon" data-orb-phase="cycle" data-orb-period="12"></canvas></div><div class="nm">Moon · 160</div><div class="meta">phases every 12 s</div></div>
     </div>
   </section>
 
@@ -292,21 +296,21 @@ Ephemeris.register(someRoot);</pre>
       <ul>
         <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (23, listed above)</li>
         <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse, or the matching <b>data-orb-state</b></li>
-        <li><b>data-orb-ink=1</b> monochrome, follows the page theme like thinking-orbs</li>
+        <li><b>data-orb-ink=1</b> monochrome dots that follow the page theme</li>
         <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
-        <li><b>data-orb-arms</b> · <b>data-orb-clouds</b>, <b>data-orb-stars</b> · <b>data-orb-spin</b>, <b>data-orb-tilt</b> · <b>data-orb-period</b></li>
+        <li><b>data-orb-arms</b> · <b>data-orb-clouds</b>, <b>data-orb-stars</b> · <b>data-orb-spin</b>, <b>data-orb-tilt</b> · <b>data-orb-period</b> · <b>data-orb-surface</b>, <b>data-orb-phase</b></li>
       </ul>
     </div>
     <div class="doc">
-      <p><b>Or drive it yourself.</b> Every mode is a plain function with the thinking-orbs signature,
-        so it drops into an existing engine too.</p>
+      <p><b>Or drive it yourself.</b> Every mode is a plain function, <code>(ctx, size, t, dark, opts)</code>,
+        so it drops into an existing orb engine too.</p>
 <pre>Ephemeris.draw('galaxy', ctx, 64, t, dark, {
   arms: 2, lite: true,
   palette: { cold:[10,122,90], mid:[95,216,176], hot:[232,255,246],
              glow:[32,180,138], ring:[255,255,255], shadow:[0,0,0] }
 });
 
-// into thinking-orbs
+// into an engine with the same signature
 Orbs.MODE_DRAWS.pulsar = Ephemeris.MODES.pulsar.draw;
 Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
       <ul>
