@@ -1,4 +1,4 @@
-/*! ephemeris 0.5.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.7.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -499,7 +499,8 @@
     const ax = moons ? Math.min(1.8, Math.max(1, W * 0.47 / (maxA * Rp))) : 1;       // a wide canvas spreads the orbits
     const proj = makeProj(0.12 * Math.sin(t * 0.05), (o.tilt ?? 0.42) + 0.04 * Math.sin(t * 0.08), 0, 0, 1);
     const spin = t * (o.spin ?? 0.35);
-    // surface: 'bands' (gas giant), 'moon' (maria + craters), 'mercury' (craters only), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps)
+    // surface: 'bands' (gas giant), 'moon' (maria + craters), 'mercury' (craters only), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps), 'pluto' (the heart)
+    // bandAmp: contrast of the bands, 0.28 default; Venus runs low
     // spot: true adds a warm oval on the southern belt (Jupiter); 'dark' removes dots there instead (Neptune)
     // streaks: bright thin cloud streaks along a few latitudes (Neptune)
     const darkSpot = o.spot === 'dark';
@@ -543,12 +544,13 @@
         const [x, y, z] = proj(Math.cos(th) * a, 0, Math.sin(th) * a);
         if (z < 0 && Math.hypot(x, y) < Rp) continue;
         const r = Math.max(1.1 * M, m.r * Rp), list = z < 0 ? back : front;
-        if (r < 2.4 * M) list.push([x, y, r, ink ? null : ramp(pal.ramp, m.heat), 1, 0.25]);
+        const mc = m.col || null;
+        if (r < 2.4 * M) list.push([x, y, r, ink ? null : (mc || ramp(pal.ramp, m.heat)), 1, 0.25]);
         else {
           const NM = Math.min(48, Math.round(r * r * 0.9));
           for (let i = 0; i < NM; i++) {
             const d = fib(i, NM); if (d[2] < 0) continue;
-            list.push([x + d[0] * r, y + d[1] * r, Math.max(rMin, (0.5 + 0.6 * d[2]) * M), ink ? null : ramp(pal.ramp, m.heat + 0.08 * d[2]), 0.5 + 0.5 * d[2], 0.42 - 0.2 * d[2]]);
+            list.push([x + d[0] * r, y + d[1] * r, Math.max(rMin, (0.5 + 0.6 * d[2]) * M), ink ? null : (mc || ramp(pal.ramp, m.heat + 0.08 * d[2])), 0.5 + 0.5 * d[2], 0.42 - 0.2 * d[2]]);
           }
         }
       }
@@ -558,7 +560,7 @@
     for (let la = 0; la <= LAT; la++) {
       const lat = -Math.PI / 2 + la / LAT * Math.PI, cl = Math.cos(lat), sl = Math.sin(lat);
       const n = Math.max(1, Math.round(Math.abs(cl) * LON));
-      const band = 0.72 + 0.28 * Math.sin(lat * 9 + E(la, 5.5) * 2);
+      const amp = o.bandAmp ?? 0.28, band = (1 - amp) + amp * Math.sin(lat * 9 + E(la, 5.5) * 2);
       for (let lo = 0; lo < n; lo++) {
         const lon = lo / n * TAU, ph = lon + spin;
         const [x, y, z] = proj(cl * Math.cos(ph) * Rp, sl * Rp, cl * Math.sin(ph) * Rp);
@@ -583,6 +585,13 @@
           heat = ice ? 0.95 : land ? 0.45 + 0.2 * noise(lat * 6, lon * 6) : 0.04 + 0.08 * noise(lat * 4, lon * 4);
           a = ink ? (land || ice ? 0.9 : 0.45) * (0.3 + 0.7 * lit) : 0.12 + 0.85 * lit;
           white = (ice ? 0.15 : land ? 0.3 : 0.62) + 0.25 * (1 - lit);
+        } else if (surf === 'pluto') {
+          const dlon = Math.atan2(Math.sin(lon - 0.8), Math.cos(lon - 0.8));
+          const heart = (dlon / 0.5) ** 2 + ((lat + 0.12) / 0.42) ** 2 < 1;
+          const dark = noise(lat * 2.6 + 70, lon * 2.6);
+          heat = heart ? 0.95 : dark > 0.55 ? 0.12 + 0.15 * dark : 0.45 + 0.25 * dark;
+          a = ink ? 0.4 + 0.6 * lit : 0.1 + 0.85 * lit;
+          white = (heart ? 0.1 : dark > 0.55 ? 0.55 : 0.32) + 0.25 * (1 - lit);
         } else if (surf === 'mars') {
           const dark = noise(lat * 2.2 + 50, lon * 2.2), cap = Math.abs(lat) > 1.28;
           heat = cap ? 0.95 : 0.3 + 0.4 * dark;
@@ -835,6 +844,88 @@
     if (o.space) paintRim(ctx, W, size);
   }
 
+  /* ================================================================== orrery */
+  // The solar system as a clockwork model: a small Sun, eight planets on compressed orbits with
+  // their own colours and relative periods, a faint asteroid belt, dotted orbit rings, seen at a tilt.
+  // spin scales time. The palette colours the Sun (hot), its glow (glow) and the orbit rings (cold).
+  const SOLAR = { cold: [120, 130, 170], mid: [200, 205, 220], hot: [255, 240, 200], glow: [255, 200, 100], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  const PLANETS = [   // orbit (of R), radius (of R), period (s), colour, name
+    [0.17, 0.028, 4,  [160, 150, 140], 'mercury'], [0.25, 0.045, 7,  [240, 220, 170], 'venus'],
+    [0.33, 0.048, 10, [70, 130, 220],  'earth'],   [0.41, 0.036, 15, [215, 115, 60],  'mars'],
+    [0.60, 0.10,  30, [225, 195, 160], 'jupiter'], [0.72, 0.085, 45, [236, 217, 178], 'saturn'],
+    [0.84, 0.062, 65, [180, 230, 235], 'uranus'],  [0.95, 0.060, 90, [60, 110, 230],  'neptune']
+  ];
+  function drawOrrery(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || SOLAR);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const R = Math.min(size * 0.47, W * 0.48), tt = t * (o.spin ?? 1);
+    const proj = makeProj(0.08 * Math.sin(t * 0.04), o.tilt ?? 0.6, 0, 0, 1);
+    const Rs = R * 0.075;
+    const NO = Math.round(40 * countScale(size, 0.8, 4)), NB = Math.round(90 * countScale(size, 1.1, 8) * lite);
+
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    const dot = dotPainter(ctx, ink, dark);
+
+    if (!ink) {
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.5);
+      g.addColorStop(0, rgba(pal.glow, 0.45)); g.addColorStop(0.25, rgba(pal.glow, 0.12)); g.addColorStop(1, rgba(pal.glow, 0));
+      ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
+    }
+    // orbit rings, dotted and faint
+    for (const [orb] of PLANETS) {
+      for (let i = 0; i < NO; i++) {
+        const a = i / NO * TAU, [x, y, z] = proj(Math.cos(a) * orb * R, 0, Math.sin(a) * orb * R), C = (z / R + 1) / 2;
+        dot(x, y, Math.max(rMin, 0.45 * M), pal.ramp[0], ink ? 0.25 + 0.15 * C : 0.1 + 0.08 * C, 0.75);
+      }
+    }
+    // asteroid belt
+    for (let i = 0; i < NB; i++) {
+      const a = E(i, 61.1) * TAU + tt * TAU / 22, r = R * (0.47 + 0.07 * E(i, 62.2));
+      const [x, y, z] = proj(Math.cos(a) * r, (E(i, 63.3) - 0.5) * R * 0.02, Math.sin(a) * r), C = (z / R + 1) / 2;
+      dot(x, y, Math.max(rMin, 0.5 * M), pal.ramp[1], ink ? 0.4 + 0.3 * C : 0.12 + 0.18 * C, 0.6);
+    }
+    // planets, back to front, with the Sun slotted in by depth
+    const items = [];
+    PLANETS.forEach(([orb, pr, T, col, name], k) => {
+      const a = E(k, 64.4) * TAU + tt * TAU / T, [x, y, z] = proj(Math.cos(a) * orb * R, 0, Math.sin(a) * orb * R);
+      items.push({ z, x, y, r: Math.max(1.1 * M, pr * R), col, name });
+    });
+    items.push({ z: 0, sun: true });
+    items.sort((p, q) => p.z - q.z);
+    for (const it of items) {
+      if (it.sun) {
+        const NS = Math.round(36 * countScale(size, 1, 6));
+        for (let i = 0; i < NS; i++) {
+          const d = fib(i, NS); if (d[2] < 0) continue;
+          dot(d[0] * Rs, d[1] * Rs, Math.max(rMin, (0.8 + 1.1 * d[2]) * M), pal.ramp[2], ink ? 1 : 0.6 + 0.4 * d[2], 0.06 + 0.1 * (1 - d[2]));
+        }
+        continue;
+      }
+      const C = (it.z / R + 1) / 2;
+      if (it.r < 2.4 * M) dot(it.x, it.y, it.r, it.col, ink ? 0.8 + 0.2 * C : 0.75 + 0.25 * C, 0.2);
+      else {
+        const NM = Math.min(60, Math.round(it.r * it.r));
+        for (let i = 0; i < NM; i++) {
+          const d = fib(i, NM); if (d[2] < 0) continue;
+          dot(it.x + d[0] * it.r, it.y + d[1] * it.r, Math.max(rMin, (0.5 + 0.6 * d[2]) * M), it.col, 0.5 + 0.5 * d[2], 0.42 - 0.2 * d[2]);
+        }
+      }
+      if (it.name === 'saturn' && it.r >= 1.8 * M) {   // a ring, once there is room for one
+        const NR = Math.round(it.r * 6);
+        for (let i = 0; i < NR; i++) {
+          const a = i / NR * TAU, [rx, ry] = proj(Math.cos(a) * it.r * 1.9, 0, Math.sin(a) * it.r * 1.9);
+          dot(it.x + rx, it.y + ry, Math.max(rMin, 0.45 * M), it.col, ink ? 0.7 : 0.55, 0.4);
+        }
+      }
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
   /* ================================================================== registry + driver */
   const MODES = {
     blackhole: { draw: drawBlackHole, defaults: EMBER,    state: 'pondering' },
@@ -845,7 +936,8 @@
     saturn:    { draw: drawSaturn,    defaults: SATURN,   state: 'orbiting' },
     supernova: { draw: drawSupernova, defaults: CRAB,     state: 'erupting' },
     binary:    { draw: drawBinary,    defaults: BINARY,   state: 'pairing' },
-    eclipse:   { draw: drawEclipse,   defaults: CORONA,   state: 'aligning' }
+    eclipse:   { draw: drawEclipse,   defaults: CORONA,   state: 'aligning' },
+    orrery:    { draw: drawOrrery,    defaults: SOLAR,    state: 'revolving' }
   };
   const STATE_TO_MODE = Object.fromEntries(Object.entries(MODES).map(([m, v]) => [v.state, m]));
 
@@ -884,8 +976,15 @@
                        moons: [{ a: 1.75, r: 0.085, T: 5, heat: 0.6, phase0: 0 }, { a: 2.15, r: 0.075, T: 10, heat: 0.95, phase0: 1.2 },
                                { a: 2.55, r: 0.125, T: 20, heat: 0.5, phase0: 2.6 }, { a: 2.95, r: 0.11, T: 46, heat: 0.15, phase0: 4.1 }] },
                       palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
+    'venus':        { mode: 'saturn',    opts: { rings: false, bandAmp: 0.1, spin: -0.08, tilt: 0.15, phase: 0.18 }, palette: P([200, 160, 90], [240, 220, 170], [255, 250, 235], [240, 215, 150]) },
+    'pluto':        { mode: 'saturn',    opts: { rings: false, surface: 'pluto', spin: 0.12, tilt: 0.3, phase: 0.14 }, palette: P([110, 60, 50], [190, 160, 140], [245, 235, 225], [180, 150, 140]) },
     'neptune':      { mode: 'saturn',    opts: { rings: false, spot: 'dark', streaks: true, spin: 0.4, tilt: 0.5, phase: 0.1 }, palette: P([30, 60, 180], [60, 110, 230], [200, 225, 255], [70, 120, 255]) },
     'mercury':      { mode: 'saturn',    opts: { rings: false, surface: 'mercury', phase: 0.22, spin: 0.05, tilt: 0.1 }, palette: P([90, 80, 75], [160, 150, 140], [225, 220, 210], [120, 110, 105]) },
+    'earth-moon':   { mode: 'saturn',    opts: { rings: false, surface: 'earth', phase: 0.12, spin: 0.3, tilt: 0.35,
+                       moons: [{ a: 2.7, r: 0.27, T: 14, heat: 0.5, col: [200, 200, 205], phase0: 0.8 }] },
+                      palette: P([25, 80, 190], [80, 150, 80], [240, 245, 250], [90, 150, 255]) },
+    // the whole thing
+    'solar-system': { mode: 'orrery' },
     // the sun
     'sun':          { mode: 'eclipse',   opts: { moon: false, spots: true, radius: 0.24 } },
     // supernovae
@@ -963,7 +1062,7 @@
   }
 
   return {
-    version: '0.5.0',
+    version: '0.7.0',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

@@ -3,7 +3,7 @@
 Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
-Nine kinds of body, and named presets for thirty real ones:
+Ten kinds of body, and named presets for thirty-four real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -16,6 +16,7 @@ Nine kinds of body, and named presets for thirty real ones:
 | `supernova` | erupting | a star collapses, blows a shell outward, the shell fades into a filamentary remnant, the core rebuilds; loops |
 | `binary` | pairing | two stars round a barycentre on a tilted orbit, a gas stream pulled off the secondary curling into the primary |
 | `eclipse` | aligning | a dotted sun with a corona of streamers; the moon crosses it, corona and prominences show near totality, diamond ring either side |
+| `orrery` | revolving | the solar system as a clockwork model: a small Sun, eight planets on compressed orbits at their relative periods, the asteroid belt, Saturn's ring, dotted orbits, seen at a tilt |
 
 ### Named bodies
 
@@ -39,6 +40,10 @@ still override, and the CSS variables still recolour.
 | `sun` | eclipse, no moon, sunspots, corona | | `jupiter-moons` | saturn, Io, Europa, Ganymede, Callisto |
 | | | | `neptune` | saturn, dark spot, cloud streaks |
 | | | | `mercury` | saturn, cratered, lit from the side |
+| | | | `venus` | saturn, cream clouds, retrograde |
+| | | | `pluto` | saturn, tan and maroon, the heart |
+| | | | `earth-moon` | saturn, Earth with the Moon in orbit |
+| | | | `solar-system` | orrery |
 | | | | `mars` | saturn, rust, polar caps |
 | | | | `moon` | saturn, maria, craters, phases |
 
@@ -62,7 +67,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.5.0/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.7.0/src/ephemeris.js"></script>
 ```
 
 ### Markup
@@ -73,16 +78,16 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | attribute | values | does |
 |---|---|---|
 | `data-orb-body` | `andromeda` `orion` `saturn` … | a named object, see the table above |
-| `data-orb-mode` | `blackhole` `pulsar` `galaxy` `nebula` `comet` `saturn` `supernova` `binary` `eclipse` | which kind of body |
-| `data-orb-state` | `pondering` `pinging` `swirling` `dreaming` `rushing` `orbiting` `erupting` `pairing` `aligning` | same thing, as a state name |
+| `data-orb-mode` | `blackhole` `pulsar` `galaxy` `nebula` `comet` `saturn` `supernova` `binary` `eclipse` `orrery` | which kind of body |
+| `data-orb-state` | `pondering` `pinging` `swirling` `dreaming` `rushing` `orbiting` `erupting` `pairing` `aligning` `revolving` | same thing, as a state name |
 | `data-orb-ink` | `1` | monochrome dots that follow the page theme |
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design) |
-| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1) |
+| `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1), orrery time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
-| `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` | planet surface on the saturn mode |
+| `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` `pluto` | planet surface on the saturn mode |
 | `data-orb-phase` | 0..1 or `cycle` | sun angle: 0 full, 0.5 new; `cycle` waxes and wanes over `period` |
 | `data-orb-clouds` | number | nebula cloud count (default 5) |
 | `data-orb-stars` | number | nebula star count (default scales with size, 3 at 64) |
@@ -129,7 +134,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
 (`arms`, `wind`, `pitchAngle`, `omega` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
-pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
+pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour

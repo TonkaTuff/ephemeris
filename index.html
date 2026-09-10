@@ -83,10 +83,10 @@ a{color:var(--probe)}
 <body>
 <div class="shell">
   <header>
-    <div class="eyebrow">ephemeris 0.5.0 · dot-celestials</div>
+    <div class="eyebrow">ephemeris 0.7.0 · dot-celestials</div>
     <h1>Ephemeris</h1>
     <p class="lede">Small animated orbs of things in the sky, drawn as dots on one canvas. <b>No dependencies</b>,
-      one script. Nine kinds of body and thirty named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
+      one script. Ten kinds of body and thirty-four named ones, from the Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
   <section id="play">
@@ -145,6 +145,10 @@ a{color:var(--probe)}
       <div class="cell" data-pick="moon" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="moon"></canvas></div><div class="nm">The Moon</div><div class="meta">moon · saturn<br>maria, craters, phases</div></div>
       <div class="cell" data-pick="neptune" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="neptune"></canvas></div><div class="nm">Neptune</div><div class="meta">neptune · saturn<br>the dark spot, cloud streaks</div></div>
       <div class="cell" data-pick="mercury" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="mercury"></canvas></div><div class="nm">Mercury</div><div class="meta">mercury · saturn<br>cratered, lit from the side</div></div>
+      <div class="cell" data-pick="venus" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="venus"></canvas></div><div class="nm">Venus</div><div class="meta">venus · saturn<br>cream clouds, faint bands, spins backwards</div></div>
+      <div class="cell" data-pick="pluto" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="pluto"></canvas></div><div class="nm">Pluto</div><div class="meta">pluto · saturn<br>tan, maroon, and the heart</div></div>
+      <div class="cell" data-pick="earth-moon" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="earth-moon"></canvas></div><div class="nm">Earth and Moon</div><div class="meta">earth-moon · saturn<br>the pair, moon on a 14 s orbit</div></div>
+      <div class="cell" data-pick="solar-system" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="solar-system"></canvas></div><div class="nm">The Solar System</div><div class="meta">solar-system · orrery<br>eight planets, the belt, Saturn's ring</div></div>
       <div class="cell" data-pick="sn1987a" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="sn1987a"></canvas></div><div class="nm">SN 1987A</div><div class="meta">sn1987a · supernova<br>shell out, remnant, again</div></div>
       <div class="cell" data-pick="cassiopeia-a" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="cassiopeia-a"></canvas></div><div class="nm">Cassiopeia A</div><div class="meta">cassiopeia-a · supernova<br>teal and red, slower</div></div>
       <div class="cell" data-pick="albireo" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="albireo"></canvas></div><div class="nm">Albireo</div><div class="meta">albireo · binary<br>gold and blue pair</div></div>
@@ -349,7 +353,7 @@ a{color:var(--probe)}
 Ephemeris.register(someRoot);</pre>
       <ul>
         <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (23, listed above)</li>
-        <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse, or the matching <b>data-orb-state</b></li>
+        <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse · orrery, or the matching <b>data-orb-state</b></li>
         <li><b>data-orb-ink=1</b> monochrome dots that follow the page theme</li>
         <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
         <li><b>data-orb-arms</b> · <b>data-orb-clouds</b>, <b>data-orb-stars</b> · <b>data-orb-spin</b>, <b>data-orb-tilt</b> · <b>data-orb-period</b> · <b>data-orb-surface</b>, <b>data-orb-phase</b></li>
@@ -386,8 +390,9 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   const $ = id => document.getElementById(id);
   const KNOBS = { spin: [0.05, 8, 0.05, 'spin'], tilt: [0, 1.5, 0.01, 'tilt'], period: [2, 40, 1, 'period'],
                   arms: [1, 6, 1, 'arms'], clouds: [1, 8, 1, 'clouds'], stars: [0, 12, 1, 'stars'], phase: [0, 1, 0.01, 'phase'] };
-  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt', 'phase', 'period'], galaxy: ['arms'], nebula: ['clouds', 'stars'],
-                       supernova: ['period'], eclipse: ['period'], binary: ['spin'], comet: ['spin'], blackhole: [] };
+  // only spin and tilt get sliders; period, phase, arms, clouds, stars stay in the README for people to find
+  const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: [], nebula: [], supernova: [], eclipse: [],
+                       binary: ['spin'], comet: ['spin'], blackhole: [], orrery: ['spin', 'tilt'] };
   const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
   const st = { body: 'andromeda', size: 240, ratio: 1, ink: false, lite: false, space: false, knobs: {}, colors: {} };
 
