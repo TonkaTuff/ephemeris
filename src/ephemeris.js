@@ -1,4 +1,4 @@
-/*! ephemeris 0.7.1 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.8.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -259,6 +259,11 @@
   /* ================================================================== galaxy */
   // A spiral seen at a tilt: logarithmic arms, a bright flattened bulge, dust scatter, the pattern
   // turning slowly. `arms` picks the count (4 = Milky Way, 2 = a grand-design like M51).
+  // bar: length of a central bar as a fraction of the disk radius; arms start from its ends (M83, NGC 1300)
+  // ring: width of a bright outer ring instead of arms, `spokes` = fraction of dots on radial spokes (Cartwheel)
+  // scatter: across-arm spread multiplier, 2+ makes a loose flocculent spiral (Triangulum)
+  // knots: fraction of arm dots that are bright H II knots, 0.07 default
+  // plume: height of a vertical outflow from the core as a fraction of the radius (M82)
   const MILKYWAY = { cold: [77, 107, 255], mid: [201, 184, 255], hot: [255, 243, 214], glow: [138, 124, 255], ring: [255, 255, 255], shadow: [0, 0, 0] };
   function drawGalaxy(ctx, size, t, dark, o = {}) {
     const W = o.w ?? size, half = size / 2, cx = W / 2;
@@ -266,6 +271,8 @@
     const M = radiusScale(size), lite = o.lite ? 0.5 : 1;
     const R = Math.min(size * 0.47, W * 0.48);           // disk radius
     const arms = o.arms ?? 4, k = o.wind ?? 3.4;         // wind = 1/tan(pitch angle) ≈ 16°
+    const bar = o.bar ?? 0, ring = o.ring ?? 0, spokes = o.spokes ?? 0.25, plume = o.plume ?? 0;
+    const scat = o.scatter ?? 1, knotAt = 1 - (o.knots ?? 0.07), r0 = R * (bar || 0.13);
     const pitch = (o.pitchAngle ?? 1.0) + 0.05 * Math.sin(t * 0.11);   // camera elevation, 0 = edge-on
     const proj = makeProj(0.25 + 0.06 * Math.sin(t * 0.05), pitch, 0, 0, 1);
     const turn = t * (o.omega ?? 0.18);                  // pattern rotation
@@ -293,21 +300,33 @@
     const NBULGE = Math.round(N * 0.22);
     for (let i = 0; i < N; i++) {
       let x, y, z, heat, a, white, rr;
-      if (i < NBULGE) {                                  // bulge: flattened spheroid, hot
-        const p = fib(i, NBULGE), rb = R * 0.2 * E(i, 5.5) ** 0.6;
+      if (i < NBULGE && bar && E(i, 7.7) < 0.6) {       // bar: a rod of bulge stars, turning with the pattern
+        const L = (E(i, 5.5) - 0.5) * 2 * bar * R, wd = (E(i, 6.6) - 0.5) * 0.1 * R, n = Math.abs(L) / (bar * R);
+        x = Math.cos(turn) * L - Math.sin(turn) * wd; z = Math.sin(turn) * L + Math.cos(turn) * wd; y = (E(i, 4.4) - 0.5) * 0.04 * R;
+        heat = 0.8; a = 0.5 + 0.4 * (1 - n); white = 0.15 + 0.25 * n; rr = (0.8 + 0.8 * (1 - n)) * M;
+      } else if (i < NBULGE) {                           // bulge: flattened spheroid, hot
+        const p = fib(i, NBULGE), rb = R * (ring ? 0.1 : 0.2) * E(i, 5.5) ** 0.6;
         x = p[0] * rb; y = p[1] * rb * 0.55; z = p[2] * rb;
         heat = 0.85 + 0.15 * E(i, 9.1); a = 0.55 + 0.45 * (1 - rb / (R * 0.2)); white = 0.12 + 0.2 * rb / (R * 0.2);
         rr = (0.9 + 1.2 * (1 - rb / (R * 0.2))) * M;
+      } else if (plume && E(i, 6.1) < 0.35) {           // plume: outflow above and below the core
+        const sP = E(i, 1.3), up = E(i, 2.7) < 0.5 ? -1 : 1;
+        y = up * plume * R * sP ** 0.8; x = (E(i, 3.9) - 0.5) * R * (0.12 + 0.3 * sP); z = (E(i, 4.1) - 0.5) * 0.15 * R;
+        heat = 0.5; a = 0.15 + 0.55 * (1 - sP); white = 0.3 + 0.4 * sP; rr = (0.8 + 0.7 * (1 - sP)) * M;
+      } else if (ring && E(i, 3.3) >= spokes) {         // ring: a hot band at the rim, all the way round
+        const u = E(i, 1.3), r = R * (1 - ring * u), th = E(i, 9.9) * TAU + turn, knot = E(i, 8.3) > knotAt;
+        x = Math.cos(th) * r; z = Math.sin(th) * r; y = (E(i, 4.1) - 0.5) * 0.05 * R;
+        heat = knot ? 0.45 : 0.15; a = knot ? 0.9 : 0.55; white = knot ? 0.05 : 0.2; rr = (knot ? 1.5 : 0.9) * M;
       } else {                                           // arms: log spiral θ = θ0 + k·ln(r/r0), scattered
         const j = i - NBULGE, arm = j % arms, u = E(j, 1.3);
-        const r = R * (0.13 + 0.87 * u ** 0.75), n = r / R;
-        const th = arm * TAU / arms + k * Math.log(r / (R * 0.13)) + turn;
-        const off = (E(j, 2.7) - 0.5) * 2 * (0.06 + 0.14 * n) * R;   // across-arm scatter, wider outward
-        const knot = E(j, 8.3) > 0.93;                                 // bright H II knots
+        const r = r0 + (R - r0) * u ** 0.75, n = r / R;
+        const th = arm * TAU / arms + (ring ? 0 : k * Math.log(r / r0)) + turn;   // spokes run straight
+        const off = (E(j, 2.7) - 0.5) * 2 * (0.06 + 0.14 * n) * R * (ring ? 0.3 : scat);   // across-arm scatter, wider outward
+        const knot = !ring && E(j, 8.3) > knotAt;                      // bright H II knots
         const xa = Math.cos(th) * r - Math.sin(th) * off, za = Math.sin(th) * r + Math.cos(th) * off;
         x = xa; z = za; y = (E(j, 4.1) - 0.5) * 0.05 * R;
-        const strength = (arm % 2 === 0) ? 1 : 0.7;                     // two major, two minor
-        heat = knot ? 0.95 : 0.62 - 0.55 * n;
+        const strength = ring ? 0.6 : (arm % 2 === 0) ? 1 : 0.7;       // two major, two minor
+        heat = knot ? 0.95 : ring ? 0.5 : 0.62 - 0.55 * n;
         a = (knot ? 0.9 : (0.25 + 0.55 * (1 - n) ** 1.2)) * strength;
         white = knot ? 0.08 : 0.28 + 0.4 * n;
         rr = (knot ? 1.6 : 0.6 + 0.9 * (1 - n)) * M;
@@ -951,6 +970,14 @@
     'andromeda':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.5, wind: 4.4 },   palette: P([90, 120, 255], [180, 190, 255], [255, 235, 200], [120, 120, 220]) },
     'whirlpool':    { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.35, wind: 3 },    palette: P([70, 110, 255], [215, 200, 255], [255, 240, 220], [150, 120, 255]) },
     'sombrero':     { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.14, wind: 5 },    palette: P([150, 120, 200], [235, 215, 200], [255, 245, 225], [190, 160, 180]) },
+    'pinwheel':     { mode: 'galaxy',    opts: { arms: 4, pitchAngle: 1.45, wind: 2.6, knots: 0.16, scatter: 1.3 }, palette: P([80, 130, 255], [190, 205, 255], [255, 240, 205], [110, 130, 240]) },
+    'triangulum':   { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.1, wind: 2.4, scatter: 2.2, knots: 0.18 }, palette: P([100, 150, 255], [200, 215, 255], [240, 245, 255], [120, 150, 240]) },
+    'bodes':        { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 1.0, wind: 3.8 },    palette: P([120, 130, 230], [230, 205, 170], [255, 235, 180], [200, 170, 140]) },
+    'southern-pinwheel': { mode: 'galaxy', opts: { arms: 3, bar: 0.3, pitchAngle: 1.3, wind: 2.8, knots: 0.14 }, palette: P([90, 130, 255], [210, 200, 240], [255, 238, 200], [140, 130, 240]) },
+    'ngc-1300':     { mode: 'galaxy',    opts: { arms: 2, bar: 0.5, pitchAngle: 1.2, wind: 2.2, scatter: 0.7 }, palette: P([90, 120, 255], [200, 190, 240], [255, 230, 190], [130, 120, 230]) },
+    'magellanic':   { mode: 'galaxy',    opts: { arms: 1, bar: 0.45, pitchAngle: 1.2, wind: 1.5, scatter: 2.4, knots: 0.2, omega: 0.1 }, palette: P([110, 140, 255], [220, 200, 240], [255, 225, 235], [150, 130, 240]) },
+    'cartwheel':    { mode: 'galaxy',    opts: { arms: 9, ring: 0.14, spokes: 0.3, pitchAngle: 1.2, omega: 0.08 }, palette: P([90, 140, 255], [180, 200, 255], [255, 230, 170], [120, 150, 255]) },
+    'cigar':        { mode: 'galaxy',    opts: { arms: 2, pitchAngle: 0.1, wind: 5, plume: 0.75 }, palette: P([200, 150, 120], [255, 90, 60], [255, 240, 210], [220, 120, 90]) },
     // nebulae
     'orion':        { mode: 'nebula' },
     'crab-nebula':  { mode: 'nebula',    opts: { clouds: 4, starN: 1 },                  palette: P([60, 180, 140], [255, 120, 80], [255, 240, 220], [200, 90, 120]) },
@@ -998,6 +1025,7 @@
     'totality':     { mode: 'eclipse' }
   };
   BODIES.galilean = BODIES['jupiter-moons'];
+  BODIES.lmc = BODIES.magellanic; BODIES.m82 = BODIES.cigar; BODIES.m101 = BODIES.pinwheel; BODIES.m33 = BODIES.triangulum; BODIES.m81 = BODIES.bodes; BODIES.m83 = BODIES['southern-pinwheel'];
 
   const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isDark = () => {
@@ -1063,7 +1091,7 @@
   }
 
   return {
-    version: '0.7.1',
+    version: '0.8.0',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

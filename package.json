@@ -1,6 +1,6 @@
 {
   "name": "ephemeris-orbs",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Dot-celestials: black hole, pulsar, galaxy, nebula, comet, saturn, supernova, binary, eclipse, with named bodies from the Milky Way to the Moon. Canvas 2D dots, no dependencies.",
   "main": "src/ephemeris.js",
   "files": ["src/ephemeris.js", "README.md", "LICENSE"],

@@ -3,7 +3,7 @@
 Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
-Ten kinds of body, and named presets for thirty-four real ones:
+Ten kinds of body, and named presets for forty-two real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -46,6 +46,14 @@ still override, and the CSS variables still recolour.
 | | | | `solar-system` | orrery |
 | | | | `mars` | saturn, rust, polar caps |
 | | | | `moon` | saturn, maria, craters, phases |
+| `pinwheel` | galaxy, M101, face-on, knotted | | | |
+| `triangulum` | galaxy, M33, loose flocculent | | | |
+| `bodes` | galaxy, M81, warm gold core | | | |
+| `southern-pinwheel` | galaxy, M83, three arms off a bar | | | |
+| `ngc-1300` | galaxy, barred spiral | | | |
+| `magellanic` | galaxy, LMC, irregular, a bar and a stub arm | | | |
+| `cartwheel` | galaxy, ring and spokes | | | |
+| `cigar` | galaxy, M82, edge-on with plumes | | | |
 
 **Demo and playground:** https://tonkatuff.github.io/ephemeris/ (click a body, drag the sliders, copy the tag).
 
@@ -67,7 +75,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.7.1/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.8.0/src/ephemeris.js"></script>
 ```
 
 ### Markup
@@ -83,7 +91,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-ink` | `1` | monochrome dots that follow the page theme |
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
-| `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design) |
+| `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design, spoke count on a ring galaxy) |
 | `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
@@ -133,7 +141,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 ```
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
-(`arms`, `wind`, `pitchAngle`, `omega` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
+(`arms`, `wind`, `pitchAngle`, `omega`, `bar`, `ring`, `spokes`, `scatter`, `knots`, `plume` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
 pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
