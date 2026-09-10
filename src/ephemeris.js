@@ -1,4 +1,4 @@
-/*! ephemeris 0.4.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.5.0 — dot-celestials. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -499,7 +499,10 @@
     const ax = moons ? Math.min(1.8, Math.max(1, W * 0.47 / (maxA * Rp))) : 1;       // a wide canvas spreads the orbits
     const proj = makeProj(0.12 * Math.sin(t * 0.05), (o.tilt ?? 0.42) + 0.04 * Math.sin(t * 0.08), 0, 0, 1);
     const spin = t * (o.spin ?? 0.35);
-    // surface: 'bands' (gas giant), 'moon' (maria + craters), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps)
+    // surface: 'bands' (gas giant), 'moon' (maria + craters), 'mercury' (craters only), 'earth' (oceans, land, ice, clouds), 'mars' (rust, caps)
+    // spot: true adds a warm oval on the southern belt (Jupiter); 'dark' removes dots there instead (Neptune)
+    // streaks: bright thin cloud streaks along a few latitudes (Neptune)
+    const darkSpot = o.spot === 'dark';
     const surf = o.surface || 'bands';
     // phase: sun angle in camera space. undefined = lit from the camera; a number 0..1 (0 full, 0.5 new);
     // 'cycle' waxes and wanes over `period` seconds
@@ -562,9 +565,16 @@
         if (z < 0.02) continue;
         const C = z / Rp;
         const lit = sunA == null ? C : Math.max(0, (x / Rp) * Math.sin(sunA) + C * Math.cos(sunA));
-        let heat, a, white, rr = 0.6 + 1.3 * C;
-        if (surf === 'moon') {
-          const mare = noise(lat * 2.4 + 7, lon * 2.4) > 0.58, crater = noise(lat * 9 + 3, lon * 9) > 0.82;
+        let heat, a, white, rr = 0.6 + 1.3 * C, pen = 1;
+        if (darkSpot) {   // an oval of missing dots on the southern belt, with a dimmed edge
+          const dlon = Math.atan2(Math.sin(lon - 1.2), Math.cos(lon - 1.2)), q = (dlon / 0.34) ** 2 + ((lat + 0.36) / 0.16) ** 2;
+          if (q < 1) continue;
+          if (q < 1.7) pen = 0.45;
+        }
+        const streak = o.streaks && Math.abs(lat) < 1 && noise(lat * 14 + 80, lon * 3) > 0.74;
+        if (surf === 'moon' || surf === 'mercury') {
+          const rocky = surf === 'mercury';
+          const mare = !rocky && noise(lat * 2.4 + 7, lon * 2.4) > 0.58, crater = noise(lat * (rocky ? 11 : 9) + 3, lon * (rocky ? 11 : 9)) > (rocky ? 0.72 : 0.82);
           heat = mare ? 0.12 : crater ? 0.35 : 0.55 + 0.3 * noise(lat * 5, lon * 5);
           a = ink ? 0.25 + 0.75 * lit : 0.06 + 0.9 * lit;                                  // dark side = earthshine
           white = (mare ? 0.55 : 0.3) + 0.3 * (1 - lit);
@@ -583,7 +593,9 @@
           a = ink ? 0.7 + 0.3 * C : 0.35 + 0.6 * C * band;
           white = 0.58 - 0.4 * C - 0.1 * band;
         }
-        dot(x, y, Math.max(rMin, rr * M), ink ? null : ramp(pal.ramp, heat), a, white);
+        if (sunA != null && surf === 'bands') { a *= ink ? 0.4 + 0.6 * lit : 0.15 + 0.85 * lit; white += 0.25 * (1 - lit); }
+        if (streak) { heat = 0.95; a = Math.min(1, a * 1.3 + 0.2); white = 0.12; rr *= 1.15; }
+        dot(x, y, Math.max(rMin, rr * M), ink ? null : ramp(pal.ramp, heat), a * pen, white);
       }
     }
     if (surf === 'earth') {   // clouds: a sparser layer on its own drift, only where the cloud noise is thick
@@ -601,7 +613,7 @@
         }
       }
     }
-    if (o.spot) {   // a great red spot: an oval of cold-colour dots riding the southern belt
+    if (o.spot === true) {   // a great red spot: an oval of cold-colour dots riding the southern belt
       const NSp = Math.round(40 * countScale(size, 1, 6) * lite);
       for (let i = 0; i < NSp; i++) {
         const u = Math.sqrt(E(i, 41.1)), v = E(i, 42.2) * TAU;
@@ -872,6 +884,8 @@
                        moons: [{ a: 1.75, r: 0.085, T: 5, heat: 0.6, phase0: 0 }, { a: 2.15, r: 0.075, T: 10, heat: 0.95, phase0: 1.2 },
                                { a: 2.55, r: 0.125, T: 20, heat: 0.5, phase0: 2.6 }, { a: 2.95, r: 0.11, T: 46, heat: 0.15, phase0: 4.1 }] },
                       palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
+    'neptune':      { mode: 'saturn',    opts: { rings: false, spot: 'dark', streaks: true, spin: 0.4, tilt: 0.5, phase: 0.1 }, palette: P([30, 60, 180], [60, 110, 230], [200, 225, 255], [70, 120, 255]) },
+    'mercury':      { mode: 'saturn',    opts: { rings: false, surface: 'mercury', phase: 0.22, spin: 0.05, tilt: 0.1 }, palette: P([90, 80, 75], [160, 150, 140], [225, 220, 210], [120, 110, 105]) },
     // the sun
     'sun':          { mode: 'eclipse',   opts: { moon: false, spots: true, radius: 0.24 } },
     // supernovae
@@ -949,7 +963,7 @@
   }
 
   return {
-    version: '0.4.0',
+    version: '0.5.0',
     register, mount, MODES, STATE_TO_MODE, BODIES,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

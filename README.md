@@ -3,7 +3,7 @@
 Dot-celestials: small animated orbs of things in the sky, drawn as dots on one `<canvas>`. No
 dependencies, one script.
 
-Nine kinds of body, and named presets for twenty-eight real ones:
+Nine kinds of body, and named presets for thirty real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -37,6 +37,8 @@ still override, and the CSS variables still recolour.
 | `crab-pulsar` | pulsar | | `totality` | eclipse |
 | `vela` | pulsar | | `earth` | saturn, oceans, land, ice, clouds |
 | `sun` | eclipse, no moon, sunspots, corona | | `jupiter-moons` | saturn, Io, Europa, Ganymede, Callisto |
+| | | | `neptune` | saturn, dark spot, cloud streaks |
+| | | | `mercury` | saturn, cratered, lit from the side |
 | | | | `mars` | saturn, rust, polar caps |
 | | | | `moon` | saturn, maria, craters, phases |
 
@@ -60,7 +62,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.4.0/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.5.0/src/ephemeris.js"></script>
 ```
 
 ### Markup
@@ -80,7 +82,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), binary orbit (0.9), comet flow (1) |
 | `data-orb-tilt` | number | pulsar magnetic-axis tilt (0.62), saturn ring tilt (0.42) |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
-| `data-orb-surface` | `bands` `moon` `earth` `mars` | planet surface on the saturn mode |
+| `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` | planet surface on the saturn mode |
 | `data-orb-phase` | 0..1 or `cycle` | sun angle: 0 full, 0.5 new; `cycle` waxes and wanes over `period` |
 | `data-orb-clouds` | number | nebula cloud count (default 5) |
 | `data-orb-stars` | number | nebula star count (default scales with size, 3 at 64) |
@@ -127,7 +129,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
 (`arms`, `wind`, `pitchAngle`, `omega` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
-pulsar and saturn, `rings`, `spot`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
+pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour
