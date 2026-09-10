@@ -57,7 +57,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a commit or tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@main/src/ephemeris.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.2.0/src/ephemeris.js"></script>
 ```
 
 ### Markup
