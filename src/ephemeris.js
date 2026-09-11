@@ -1,4 +1,4 @@
-/*! ephemeris 0.9.4 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.10.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -103,7 +103,11 @@
   // Interstellar's Gargantua. Edge-on accretion disk on Keplerian orbits, far side lensed over the top
   // and under the bottom, photon ring, Doppler-bright on the approaching side. Parametric lensing,
   // not ray marching. Everything scales off the shadow radius Rs = 0.13 · size.
-  const EMBER = { cold: [255, 120, 30], mid: [255, 183, 130], hot: [255, 246, 230], glow: [255, 165, 70], ring: [255, 255, 245], shadow: [0, 0, 0] };
+  // Three options make the other famous ones: `jets` (M87*, TON 618), `face` looks down on the ring
+  // with three drifting hot spots (Sgr A*), `companion` puts a star on a coplanar orbit feeding the
+  // disk through a stream (Cygnus X-1).
+  const SPOTS = [0.5, 2.4, 4.4];   // Sgr A*'s hot spots, unevenly spaced like the EHT image
+  const EMBER ={ cold: [255, 120, 30], mid: [255, 183, 130], hot: [255, 246, 230], glow: [255, 165, 70], ring: [255, 255, 245], shadow: [0, 0, 0] };
   // the shipped ember look, kept literal so the default is pixel-stable
   const EMBER_PAL = {
     ramp: [EMBER.cold, EMBER.mid, EMBER.hot],
@@ -125,6 +129,12 @@
     const ink = !!o.ink;
     const pal = o.palette ? buildPal(o.palette) : EMBER_PAL;
     const rBase = (o.rBase ?? (ink ? 1.3 : 1.1)) * M, rDepth = (o.rDepth ?? (ink ? 1.7 : 1.6)) * M, rMin = 0.3;
+    const face = o.face || 0;          // apparent axis ratio of the outer disk seen from above; 0 = edge-on
+    const jetLen = o.jets || 0;        // jet reach in shadow radii; 0 = none
+    const comp = o.companion || 0;     // companion orbit radius in shadow radii; 0 = none
+    // the companion goes round in `period` seconds on the disk plane: behind the hole, then in front
+    const phS = -TAU * t / (o.period ?? 18) + 2.1, cS = Math.cos(phS), sS = Math.sin(phS), starNear = sS > 0;
+    const Rstar = Rs * (o.starR ?? 1.7), aS = Math.min(comp * Rs, W / 2 - Rstar * 1.2);   // narrow canvas: pulled in
 
     ctx.save();
     if (o.space) paintSpace(ctx, W, size, t, o);
@@ -136,21 +146,30 @@
       let g = ctx.createRadialGradient(0, 0, Rs * 0.9, 0, 0, Rs * 3.2);
       g.addColorStop(0, pal.halo[0]); g.addColorStop(0.4, pal.halo[1]); g.addColorStop(1, pal.halo[2]);
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
-      ctx.save(); ctx.scale(1, 0.22);
+      const sq = face || 0.22;   // the disk plane, squashed to how flat we see it
+      ctx.save(); ctx.scale(1, sq);
       g = ctx.createRadialGradient(0, 0, Rs, 0, 0, rOut * 1.05);
       g.addColorStop(0, pal.haze[0]); g.addColorStop(1, pal.haze[1]);
-      ctx.fillStyle = g; ctx.fillRect(-W, -size / 0.22, 2 * W, 2 * size / 0.22);
+      ctx.fillStyle = g; ctx.fillRect(-W, -size / sq, 2 * W, 2 * size / sq);
       ctx.restore();
     }
+    if (jetLen) paintJets();
+    if (comp && !starNear) paintStar();   // behind: under the shadow and the near side of the disk
 
     const front = [];
     for (let i = 0; i < N; i++) {
-      const r = rIn + (rOut - rIn) * E(i, 1.1) ** 1.6;
+      const r = rIn + (rOut - rIn) * E(i, 1.1) ** (face ? 2.6 : 1.6);   // from above the dots pile up at the ring
       const n = (r - rIn) / (rOut - rIn);
       const ph = E(i, 2.2) * TAU - t * (o.omega ?? 2.4) / (r / Rs) ** 1.5;   // Keplerian
       const c = Math.cos(ph), s = Math.sin(ph);
       const th = (E(i, 3.7) - 0.5) * 0.07 * r;
       const rad = (1 - n) ** 1.4;
+      if (face) {   // nothing to lens from above: the ring stays round, the outer disk flattens to `face`
+        const k = hotSpot(ph), rq = Math.max(rMin, rBase + rDepth * rad);
+        dot(r * c, r * s * (face + (1 - face) * (1 - n)), rq, ink ? null : ramp(pal.ramp, 0.35 + 0.65 * k),
+            ink ? 0.6 + 0.4 * k : (0.25 + 0.75 * rad) * (0.35 + 0.65 * k), 0.45 - 0.3 * k);
+        continue;
+      }
       const heat = clamp01((1 - 0.55 * c - 0.45) / 1.1);   // Doppler: approaching (left) runs hot
       const col = ink ? null : ramp(pal.ramp, heat);
       const A = (0.2 + 0.8 * rad) * (0.5 + 0.5 * heat);
@@ -183,8 +202,75 @@
       ctx.beginPath(); ctx.arc(0, 0, Rs * 1.05, 0, TAU); ctx.stroke();
     }
     for (const d of front) dot(...d);
+    if (comp && starNear) paintStar();   // in front: over everything, the hole included
     ctx.restore();
     if (o.space) paintRim(ctx, W, size);
+
+    // Sgr A*: three hot spots on the ring, drifting round together, each flickering on its own clock
+    function hotSpot(ph) {
+      let k = 0;
+      for (let j = 0; j < 3; j++) {
+        let d = ph - (SPOTS[j] + t * 0.06); d -= Math.round(d / TAU) * TAU;
+        k = Math.max(k, (0.7 + 0.3 * Math.sin(t * (0.6 + 0.25 * j) + j * 2.1)) * Math.exp(-4 * d * d));
+      }
+      return k;
+    }
+
+    // Jets up and down the spin axis: dots streaming out with knots riding along. The approaching
+    // (top) jet is beamed bright and the counter-jet dim, as in every picture of M87.
+    function paintJets() {
+      const jc = o.jetCol || pal.glow, NJ = Math.round(60 * countScale(size, 1.2, 14) * (jetLen / 3) * (o.lite ? 0.5 : 1));
+      if (!ink) {
+        for (const [side, a] of [[-1, 1], [1, 0.45]]) {
+          ctx.save(); ctx.beginPath(); ctx.rect(-W, side < 0 ? -size : 0, 2 * W, size); ctx.clip();
+          ctx.scale(0.14, 1); ctx.globalAlpha = a;
+          const g = ctx.createRadialGradient(0, 0, Rs * 0.8, 0, 0, Rs * jetLen);
+          g.addColorStop(0, rgba(jc, 0.3)); g.addColorStop(1, rgba(jc, 0));
+          ctx.fillStyle = g; ctx.fillRect(-W / 0.14, -size, 2 * W / 0.14, 2 * size);
+          ctx.restore();
+        }
+      }
+      for (let i = 0; i < 2 * NJ; i++) {
+        const side = i < NJ ? -1 : 1;
+        const u = frac(E(i, 8.1) + t * (0.06 + 0.05 * E(i, 8.3)));   // base to tip
+        const y = side * Rs * (1.1 + (jetLen - 1.1) * u);
+        const x = (E(i, 8.5) - 0.5) * 2 * Math.sqrt(E(i, 8.6)) * Rs * (0.22 + 0.55 * u) + Rs * 0.1 * Math.sin(u * 7 + t * 0.8 + side);
+        const knot = 0.6 + 0.4 * Math.sin(u * 9 - t * 1.2 + side);
+        const A = (1 - u) ** 0.7 * knot * (0.5 + 0.5 * E(i, 8.7)) * clamp01(u * 6) * (side < 0 ? 1 : 0.4);
+        const col = ink ? null : o.jetCol ? ramp([jc, jc, pal.ramp[2]], 1 - 0.5 * u) : ramp(pal.ramp, 1 - 0.65 * u);
+        dot(x, y, Math.max(rMin, rBase * 0.8 + rDepth * 0.6 * (1 - u)), col, A, 0.35 + 0.4 * u);
+      }
+    }
+
+    // A companion star drawn out into a teardrop toward the hole, with a stream of gas leaving the
+    // tip, curving with the orbit and joining the disk edge going the disk's way.
+    function paintStar() {
+      const sc = starNear ? 1.06 : 0.94, af = starNear ? 1 : 0.8, pull = 0.5;
+      const sx = aS * cS, sy = aS * sS * tilt;
+      const col = o.starCol || [180, 205, 255], SP = [col, col, [255, 255, 255]];
+      if (!ink) {
+        const g = ctx.createRadialGradient(sx, sy, Rstar * 0.5, sx, sy, Rstar * 2.2);
+        g.addColorStop(0, rgba(col, 0.3 * af)); g.addColorStop(1, rgba(col, 0));
+        ctx.fillStyle = g; ctx.fillRect(sx - Rstar * 2.2, sy - Rstar * 2.2, Rstar * 4.4, Rstar * 4.4);
+      }
+      const NS = Math.round(150 * countScale(size, 1.2, 12) * (o.lite ? 0.6 : 1));
+      for (let i = 0; i < NS; i++) {
+        const d = fib(i, NS); if (d[2] < 0) continue;
+        const f = Math.max(0, -(d[0] * cS + d[2] * sS)) ** 3 * pull;   // the side facing the hole is drawn out
+        dot(sx + (d[0] - cS * f) * Rstar * sc, sy - d[1] * Rstar * sc, Math.max(rMin, rBase * 0.9 + rDepth * 0.5 * d[2]),
+            ink ? null : ramp(SP, 0.5 + 0.5 * d[2] * (1 - f)), (ink ? 1 : 0.4 + 0.6 * d[2]) * af, 0.3);
+      }
+      const tipR = aS - Rstar * (1 + pull) * 0.95, endR = rOut * 0.85, bend = 0.45 * endR;
+      const NM = Math.round(80 * countScale(size, 1.2, 12) * (o.lite ? 0.6 : 1));
+      for (let i = 0; i < NM; i++) {
+        const u = frac(E(i, 9.1) + t * (0.16 + 0.1 * E(i, 9.2)));
+        const spread = Rstar * (0.14 - 0.06 * u);
+        const X = tipR + (endR - tipR) * u, Y = -bend * u * u + (E(i, 9.3) - 0.5) * 2 * spread;   // in the orbit plane
+        const px = X * cS - Y * sS, py = (X * sS + Y * cS) * tilt + (E(i, 9.4) - 0.5) * 2 * spread * 0.7;
+        dot(px, py, Math.max(rMin, rBase * 0.85 + rDepth * 0.35 * (1 - u)),
+            ink ? null : ramp([pal.ramp[0], col, [255, 255, 255]], 0.5 * (1 - u)), (0.7 - 0.25 * u) * (0.6 + 0.4 * E(i, 9.5)) * af, 0.35);
+      }
+    }
   }
 
   /* ================================================================== pulsar */
@@ -997,7 +1083,10 @@
     'carina':       { mode: 'nebula',    opts: { clouds: 6, starN: 6 },                  palette: P([120, 60, 160], [255, 140, 100], [255, 235, 210], [200, 100, 140]) },
     // black holes
     'gargantua':    { mode: 'blackhole' },
-    'm87':          { mode: 'blackhole', opts: { reach: 2.6, omega: 1.2 },               palette: P([180, 60, 10], [255, 140, 30], [255, 230, 160], [255, 120, 20]) },
+    'm87':          { mode: 'blackhole', opts: { reach: 2.6, omega: 1.2, jets: 3, jetCol: [120, 170, 255] }, palette: P([180, 60, 10], [255, 140, 30], [255, 230, 160], [255, 120, 20]) },
+    'sgr-a':        { mode: 'blackhole', opts: { reach: 2.2, omega: 1.2, face: 0.85 },   palette: P([170, 50, 10], [255, 150, 40], [255, 240, 190], [255, 130, 30]) },
+    'ton-618':      { mode: 'blackhole', opts: { jets: 3.4, omega: 1.6 },               palette: P([70, 110, 255], [175, 200, 255], [255, 255, 255], [100, 140, 255]) },
+    'cygnus-x1':    { mode: 'blackhole', opts: { shadow: 0.075, reach: 1.9, companion: 5.6, omega: 3 } },
     // pulsars
     'crab-pulsar':  { mode: 'pulsar',    opts: { spin: 6.5, tilt: 0.5 } },
     'vela':         { mode: 'pulsar',    opts: { spin: 2.4, tilt: 0.9 },                 palette: P([120, 60, 220], [190, 160, 255], [240, 235, 255], [150, 100, 255]) },
@@ -1042,10 +1131,11 @@
     'Solar system': ['sun', 'mercury', 'venus', 'earth', 'moon', 'earth-moon', 'mars', 'jupiter', 'jupiter-moons', 'saturn', 'uranus', 'neptune', 'pluto', 'solar-system', 'totality'],
     'Comets': ['halley', 'hale-bopp', 'neowise'],
     'Stars': ['sirius', 'albireo', 'crab-pulsar', 'vela', 'sn1987a', 'cassiopeia-a'],
-    'Black holes': ['gargantua', 'm87'],
+    'Black holes': ['gargantua', 'm87', 'sgr-a', 'ton-618', 'cygnus-x1'],
     'Nebulae': ['orion', 'crab-nebula', 'pillars', 'carina'],
     'Galaxies': ['milky-way', 'andromeda', 'triangulum', 'magellanic', 'whirlpool', 'pinwheel', 'southern-pinwheel', 'bodes', 'sombrero', 'ngc-1300', 'cartwheel', 'cigar']
   };
+  BODIES['sagittarius-a'] = BODIES['sgr-a']; BODIES['cyg-x1'] = BODIES['cygnus-x1'];
   BODIES.lmc = BODIES.magellanic; BODIES.m82 = BODIES.cigar; BODIES.m101 = BODIES.pinwheel; BODIES.m33 = BODIES.triangulum; BODIES.m81 = BODIES.bodes; BODIES.m83 = BODIES['southern-pinwheel'];
 
   const reduced = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1078,7 +1168,7 @@
     const own = { arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
                   clouds: num(ds.orbClouds), starN: num(ds.orbStars), period: num(ds.orbPeriod),
                   phase: ds.orbPhase === 'cycle' ? 'cycle' : num(ds.orbPhase), surface: ds.orbSurface,
-                  reach: num(ds.orbReach) };
+                  reach: num(ds.orbReach), jets: num(ds.orbJets) };
     for (const k in own) if (own[k] === undefined) delete own[k];
     const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1' };
     const paint = t => {
@@ -1113,7 +1203,7 @@
   }
 
   return {
-    version: '0.9.4',
+    version: '0.10.0',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

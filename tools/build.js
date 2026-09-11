@@ -1,7 +1,7 @@
 /**
  * Build dist/ from src/ephemeris.js.
  *
- *   dist/ephemeris.min.js     the whole library, all 42 bodies
+ *   dist/ephemeris.min.js     the whole library, every body
  *   dist/<body>.min.js        one body: the core, its mode, and nothing else
  *
  * Source sections are marked with the banner comments already in the file, so
@@ -135,7 +135,7 @@ function driverForBody(driver, bodyName, modeName, bodies) {
   };
 
   const rows = [];
-  rows.push(['ephemeris.min.js', 'all 42', await squeeze(full, 'ephemeris.min.js')]);
+  rows.push(['ephemeris.min.js', `all ${canonical.size}`, await squeeze(full, 'ephemeris.min.js')]);
 
   for (const name of canonical) {
     const mode = bodies[name].mode;

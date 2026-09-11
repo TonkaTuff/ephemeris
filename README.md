@@ -15,11 +15,11 @@ Celestial stipple: Scalable animated representations of amazing things in the sk
 <p align="center"><sub>Gargantua on a wide canvas, then Andromeda, Saturn, Orion, the Crab pulsar, Earth, the Cartwheel, and Andromeda in ink.
 These are stills; every one of them moves. See them live on the <a href="https://tonkatuff.github.io/ephemeris/">demo and playground</a>.</sub></p>
 
-Ten kinds of body, and named presets for forty-two real ones:
+Ten kinds of body, and named presets for forty-five real ones:
 
 | mode | state | what you see |
 |---|---|---|
-| `blackhole` | pondering | Interstellar's Gargantua: edge-on accretion disk, far side lensed over the top and under the bottom, photon ring, Doppler-bright on the approaching side |
+| `blackhole` | pondering | Interstellar's Gargantua: edge-on accretion disk, far side lensed over the top and under the bottom, photon ring, Doppler-bright on the approaching side. Options add twin jets, a face-on ring with drifting hot spots, or a companion star feeding the disk |
 | `pulsar` | pinging | a neutron star as a lighthouse: spinning core, two beams on a tilted magnetic axis, dipole field lines, a flare each time a beam sweeps the camera |
 | `galaxy` | swirling | a spiral at a tilt: logarithmic arms, bright flattened bulge, dust scatter, bright knots, the pattern turning slowly |
 | `nebula` | dreaming | an emission nebula: overlapping gas clouds as soft drifting dots, stretched into wisps, lit from inside by a few young stars |
@@ -62,7 +62,10 @@ still override, and the CSS variables still recolour.
 |  | `sn1987a` | supernova |
 |  | `cassiopeia-a` | supernova |
 | Black holes | `gargantua` | blackhole, Interstellar |
-|  | `m87` | blackhole, the EHT one |
+|  | `m87` | blackhole, the EHT one, with its blue jet |
+|  | `sgr-a` | blackhole, ours: face-on ring, three hot spots that drift and flicker |
+|  | `ton-618` | blackhole, a quasar: blue-white disk, twin jets |
+|  | `cygnus-x1` | blackhole, a blue supergiant on a close orbit feeding a small disk |
 | Nebulae | `orion` | nebula |
 |  | `crab-nebula` | nebula |
 |  | `pillars` | nebula |
@@ -102,7 +105,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.4/dist/ephemeris.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.10.0/dist/ephemeris.min.js"></script>
 ```
 
 ### Take one body only
@@ -111,18 +114,18 @@ Every body also ships as its own file, carrying the shared core and that body's 
 else. If you only want Saturn, download only Saturn.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.4/dist/saturn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.10.0/dist/saturn.min.js"></script>
 <canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
 ```
 
 The API is identical, so `Ephemeris.body('saturn', …)`, the data attributes and the CSS variables all
-work the same. Only the other 41 bodies are missing.
+work the same. Only the other 44 bodies are missing.
 
 | file | over the wire |
 |---|---|
-| `dist/ephemeris.min.js`, all 42 | 13.4 KB gzip, 11.5 KB brotli |
-| `dist/saturn.min.js`, one body | 4.7 KB gzip |
-| `dist/gargantua.min.js`, one body | 3.6 KB gzip |
+| `dist/ephemeris.min.js`, all 45 | 14.2 KB gzip, 12.3 KB brotli |
+| `dist/saturn.min.js`, one body | 4.6 KB gzip |
+| `dist/gargantua.min.js`, one body | 4.5 KB gzip |
 | `dist/andromeda.min.js`, one body | 3.8 KB gzip |
 
 `src/ephemeris.js` is the readable original and still works as a drop-in if you prefer comments over
@@ -145,6 +148,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), sun rotation (0.12), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic axis, planet axial tilt, galaxy viewing angle (0 edge-on, 1.5 face-on) |
 | `data-orb-reach` | number | black hole disk reach in shadow radii, 6.5 by default like the film; the disk also stops at 48% of the canvas width |
+| `data-orb-jets` | number | black hole jet reach in shadow radii (M87* 3, TON 618 3.4); 0 for none |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
 | `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` `pluto` | planet surface on the saturn mode |
 | `data-orb-phase` | 0..1 or `cycle` | sun angle: 0 full, 0.5 new; `cycle` waxes and wanes over `period` |
@@ -193,7 +197,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';
 
 `opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
 (`arms`, `wind`, `tilt`, `omega`, `bar`, `ring`, `spokes`, `scatter`, `knots`, `plume` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
-pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius`, `spin` for eclipse; `period` for supernova and eclipse; `reach`, `omega`
+pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius`, `spin` for eclipse; `period` for supernova and eclipse; `reach`, `omega`, `jets`, `jetCol`, `face`, `companion`, `period`, `starCol`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.
 
 ### Behaviour

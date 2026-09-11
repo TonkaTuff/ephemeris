@@ -89,7 +89,7 @@ a{color:var(--probe)}
     <div class="eyebrow" id="eyebrow">ephemeris 0.9.3 · celestial stipple</div>
     <h1>Ephemeris</h1>
     <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!!
-      <b>No dependencies</b>, one script. Ten kinds of body and forty‑two named ones, from the
+      <b>No dependencies</b>, one script. Ten kinds of body and forty‑five named ones, from the
       Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
@@ -152,7 +152,10 @@ a{color:var(--probe)}
       <div class="cell" data-pick="cassiopeia-a" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="cassiopeia-a"></canvas></div><div class="nm">Cassiopeia A</div><div class="meta">teal and red, slower</div></div>
       <h3 class="grp">Black holes</h3>
       <div class="cell" data-pick="gargantua" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="gargantua"></canvas></div><div class="nm">Gargantua</div><div class="meta">Interstellar, ember disk</div></div>
-      <div class="cell" data-pick="m87" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="m87"></canvas></div><div class="nm">M87*</div><div class="meta">the EHT orange ring</div></div>
+      <div class="cell" data-pick="m87" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="m87"></canvas></div><div class="nm">M87*</div><div class="meta">the EHT orange ring, blue jet</div></div>
+      <div class="cell" data-pick="sgr-a" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="sgr-a"></canvas></div><div class="nm">Sagittarius A*</div><div class="meta">ours, face-on, three hot spots</div></div>
+      <div class="cell" data-pick="ton-618" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="ton-618"></canvas></div><div class="nm">TON 618</div><div class="meta">quasar, blue disk, twin jets</div></div>
+      <div class="cell" data-pick="cygnus-x1" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="cygnus-x1"></canvas></div><div class="nm">Cygnus X-1</div><div class="meta">blue supergiant feeding the disk</div></div>
       <h3 class="grp">Nebulae</h3>
       <div class="cell" data-pick="orion" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="orion"></canvas></div><div class="nm">Orion Nebula</div><div class="meta">pink emission nebula</div></div>
       <div class="cell" data-pick="crab-nebula" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="crab-nebula"></canvas></div><div class="nm">Crab Nebula</div><div class="meta">filaments, one pulsar inside</div></div>
@@ -234,7 +237,9 @@ a{color:var(--probe)}
     <div class="head"><h2>Black hole</h2><span class="tag">mode blackhole · state pondering</span></div>
     <p class="note">Interstellar's Gargantua. Edge-on accretion disk on Keplerian orbits, far side lensed over
       the top and under the bottom, photon ring, Doppler-bright on the approaching side. Height sets the
-      shadow, width sets how far the disk reaches (up to 6.5 shadow radii on a 2:1 canvas).</p>
+      shadow, width sets how far the disk reaches (up to 6.5 shadow radii on a 2:1 canvas). Three options
+      make the others: <code>jets</code> for a beamed jet and a dim counter-jet, <code>face</code> to look
+      down on the ring, <code>companion</code> for a star on a coplanar orbit feeding the disk.</p>
     <div class="hero">
       <div class="cell big"><div class="orbwrap"><canvas class="orb" width="320" height="160" data-orb-mode="blackhole"></canvas></div><div class="nm">blackhole · 320×160</div><div class="meta">wide, disk to 6.5 Rs</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole"></canvas></div><div class="nm">88</div><div class="meta">colour</div></div>
@@ -370,7 +375,7 @@ a{color:var(--probe)}
 // added later? wire them up
 Ephemeris.register(someRoot);</pre>
       <ul>
-        <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (42, grouped above)</li>
+        <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (45, grouped above)</li>
         <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse · orrery, or the matching <b>data-orb-state</b></li>
         <li><b>data-orb-ink=1</b> monochrome dots that follow the page theme</li>
         <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
