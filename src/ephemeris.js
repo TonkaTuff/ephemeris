@@ -1,4 +1,4 @@
-/*! ephemeris 0.9.3 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.9.4 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -1077,7 +1077,8 @@
     const ds = canvas.dataset;
     const own = { arms: num(ds.orbArms), spin: num(ds.orbSpin), tilt: num(ds.orbTilt),
                   clouds: num(ds.orbClouds), starN: num(ds.orbStars), period: num(ds.orbPeriod),
-                  phase: ds.orbPhase === 'cycle' ? 'cycle' : num(ds.orbPhase), surface: ds.orbSurface };
+                  phase: ds.orbPhase === 'cycle' ? 'cycle' : num(ds.orbPhase), surface: ds.orbSurface,
+                  reach: num(ds.orbReach) };
     for (const k in own) if (own[k] === undefined) delete own[k];
     const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1' };
     const paint = t => {
@@ -1112,7 +1113,7 @@
   }
 
   return {
-    version: '0.9.3',
+    version: '0.9.4',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

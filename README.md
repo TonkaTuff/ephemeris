@@ -102,7 +102,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.3/dist/ephemeris.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.4/dist/ephemeris.min.js"></script>
 ```
 
 ### Take one body only
@@ -111,7 +111,7 @@ Every body also ships as its own file, carrying the shared core and that body's 
 else. If you only want Saturn, download only Saturn.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.3/dist/saturn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.9.4/dist/saturn.min.js"></script>
 <canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
 ```
 
@@ -144,6 +144,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design, spoke count on a ring galaxy) |
 | `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), sun rotation (0.12), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic axis, planet axial tilt, galaxy viewing angle (0 edge-on, 1.5 face-on) |
+| `data-orb-reach` | number | black hole disk reach in shadow radii, 6.5 by default like the film; the disk also stops at 48% of the canvas width |
 | `data-orb-period` | seconds | supernova cycle (6), eclipse crossing (10), moon phase cycle (24) |
 | `data-orb-surface` | `bands` `moon` `mercury` `earth` `mars` `pluto` | planet surface on the saturn mode |
 | `data-orb-phase` | 0..1 or `cycle` | sun angle: 0 full, 0.5 new; `cycle` waxes and wanes over `period` |
