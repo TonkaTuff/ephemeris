@@ -108,6 +108,7 @@ a{color:var(--probe)}
           <label><input type="checkbox" id="pgInk"> ink</label>
           <label><input type="checkbox" id="pgLite"> lite</label>
           <label><input type="checkbox" id="pgSpace"> space</label>
+          <label><input type="checkbox" id="pgGlow" checked> glow</label>
         </div>
         <div class="swatches" id="pgColors"></div>
         <div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span class="meta" style="text-align:left">six css variables, read live</span><button class="reset" id="pgReset">reset colours</button></div>
@@ -250,6 +251,7 @@ a{color:var(--probe)}
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-ink="1"></canvas></div><div class="nm">ink</div><div class="meta">data-orb-ink=1</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-lite="1"></canvas></div><div class="nm">lite</div><div class="meta">data-orb-lite=1</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-space="1"></canvas></div><div class="nm">space</div><div class="meta">data-orb-space=1</div></div>
+      <div class="cell"><div class="orbwrap"><canvas class="orb" width="88" height="88" data-orb-mode="blackhole" data-orb-glow="0"></canvas></div><div class="nm">no glow</div><div class="meta">data-orb-glow=0 · dots only</div></div>
       <div class="cell"><div class="orbwrap"><canvas class="orb" width="160" height="88" data-orb-mode="blackhole" data-orb-space="1"></canvas></div><div class="nm">wide + space</div><div class="meta">160×88 · flags stack</div></div>
     </div>
   </section>
@@ -378,7 +380,7 @@ Ephemeris.register(someRoot);</pre>
         <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (45, grouped above)</li>
         <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse · orrery, or the matching <b>data-orb-state</b></li>
         <li><b>data-orb-ink=1</b> monochrome dots that follow the page theme</li>
-        <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars</li>
+        <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars · <b>data-orb-glow=0</b> dots only, no soft glow</li>
         <li><b>data-orb-arms</b> · <b>data-orb-clouds</b>, <b>data-orb-stars</b> · <b>data-orb-spin</b>, <b>data-orb-tilt</b> · <b>data-orb-period</b> · <b>data-orb-surface</b>, <b>data-orb-phase</b></li>
       </ul>
     </div>
@@ -418,7 +420,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   const MODE_KNOBS = { pulsar: ['spin', 'tilt'], saturn: ['spin', 'tilt'], galaxy: ['spin', 'tilt'], supernova: [], eclipse: ['spin'],
                        binary: ['spin'], comet: ['spin'], blackhole: [], orrery: ['spin', 'tilt'], nebula: ['spin'] };
   const hex = c => '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
-  const st = { body: 'andromeda', size: 240, ratio: 1, ink: false, lite: false, space: false, knobs: {}, colors: {} };
+  const st = { body: 'andromeda', size: 240, ratio: 1, ink: false, lite: false, space: false, glow: true, knobs: {}, colors: {} };
 
   const sel = $('pgBody');
   for (const [grp, names] of Object.entries(Ephemeris.GROUPS)) {
@@ -456,7 +458,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   function tag() {
     const w = Math.round(st.size * st.ratio), h = st.size;
     let a = `<canvas class="orb" width="${w}" height="${h}" data-orb-body="${st.body}"`;
-    if (st.ink) a += ' data-orb-ink="1"'; if (st.lite) a += ' data-orb-lite="1"'; if (st.space) a += ' data-orb-space="1"';
+    if (st.ink) a += ' data-orb-ink="1"'; if (st.lite) a += ' data-orb-lite="1"'; if (st.space) a += ' data-orb-space="1"'; if (!st.glow) a += ' data-orb-glow="0"';
     for (const k in st.knobs) a += ` data-orb-${k}="${st.knobs[k]}"`;
     const cs = Object.entries(st.colors).map(([k, v]) => `--orb-${k}:${v}`).join(';');
     if (cs) a += ` style="${cs}"`;
@@ -464,7 +466,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   }
   function js() {
     const w = Math.round(st.size * st.ratio), h = st.size;
-    const o = { ...st.knobs }; if (st.ink) o.ink = true; if (st.lite) o.lite = true; if (st.space) o.space = true; if (st.ratio !== 1) o.w = w;
+    const o = { ...st.knobs }; if (st.ink) o.ink = true; if (st.lite) o.lite = true; if (st.space) o.space = true; if (!st.glow) o.glow = false; if (st.ratio !== 1) o.w = w;
     if (Object.keys(st.colors).length) { const d = defaults(); o.palette = {}; for (const k of Ephemeris.palette.keys) o.palette[k] = st.colors[k] ? Ephemeris.palette.parse(st.colors[k]) : d[k]; }
     return `Ephemeris.body('${st.body}', ctx, ${h}, t, dark, ${JSON.stringify(o).replace(/"([a-z]+)":/g, '$1: ').replace(/,/g, ', ')});`;
   }
@@ -481,7 +483,7 @@ Orbs.STATE_TO_MODE.pinging = 'pulsar';</pre>
   sel.addEventListener('change', () => pick(sel.value));
   $('pgSize').addEventListener('input', e => { st.size = +e.target.value; $('pgSizeOut').value = e.target.value; render(); });
   $('pgRatio').addEventListener('change', e => { st.ratio = +e.target.value; render(); });
-  for (const f of ['ink', 'lite', 'space']) $('pg' + f[0].toUpperCase() + f.slice(1)).addEventListener('change', e => { st[f] = e.target.checked; render(); });
+  for (const f of ['ink', 'lite', 'space', 'glow']) $('pg' + f[0].toUpperCase() + f.slice(1)).addEventListener('change', e => { st[f] = e.target.checked; render(); });
   $('pgReset').addEventListener('click', () => { st.colors = {}; buildColors(); render(); });
   const copy = (id, btn) => () => navigator.clipboard.writeText($(id).textContent).then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1200); });
   $('pgCopy').addEventListener('click', copy('pgSnip', $('pgCopy'))); $('pgCopyJs').addEventListener('click', copy('pgJs', $('pgCopyJs')));

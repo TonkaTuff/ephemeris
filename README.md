@@ -105,7 +105,7 @@ Ephemeris.register(someRoot);   // default: document
 Or from a CDN, pinned to a tag:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.10.0/dist/ephemeris.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.11.0/dist/ephemeris.min.js"></script>
 ```
 
 ### Take one body only
@@ -114,7 +114,7 @@ Every body also ships as its own file, carrying the shared core and that body's 
 else. If you only want Saturn, download only Saturn.
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.10.0/dist/saturn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/TonkaTuff/ephemeris@v0.11.0/dist/saturn.min.js"></script>
 <canvas class="orb" width="64" height="64" data-orb-body="saturn"></canvas>
 ```
 
@@ -144,6 +144,7 @@ Height is the preset: it sets dot size, particle count and speed. Width lets a m
 | `data-orb-ink` | `1` | monochrome dots that follow the page theme |
 | `data-orb-lite` | `1` | half the particles |
 | `data-orb-space` | `1` | dark pill ground with stars |
+| `data-orb-glow` | `0` | no soft glow under the dots, just the dots on a clear canvas; the canvas is transparent either way |
 | `data-orb-arms` | number | galaxy arm count (4 Milky Way, 2 grand-design, spoke count on a ring galaxy) |
 | `data-orb-spin` | number | pulsar spin (4.2), saturn rotation (0.35), sun rotation (0.12), binary orbit (0.9), comet flow (1), orrery and nebula time scale (1) |
 | `data-orb-tilt` | number | pulsar magnetic axis, planet axial tilt, galaxy viewing angle (0 edge-on, 1.5 face-on) |
@@ -195,7 +196,7 @@ Orbs.MODE_DRAWS.pulsar = Ephemeris.MODES.pulsar.draw;
 Orbs.STATE_TO_MODE.pinging = 'pulsar';
 ```
 
-`opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `palette`, plus per-mode knobs
+`opts`: `w` canvas width (default = size), `ink`, `lite`, `space`, `glow` (false skips the soft gradients), `palette`, plus per-mode knobs
 (`arms`, `wind`, `tilt`, `omega`, `bar`, `ring`, `spokes`, `scatter`, `knots`, `plume` for galaxy; `clouds`, `starN` for nebula; `spin`, `tilt` for
 pulsar and saturn, `rings`, `spot` (true or `dark`), `streaks`, `bandAmp`, `surface`, `phase`, `moons` for saturn; `moon`, `spots`, `radius`, `spin` for eclipse; `period` for supernova and eclipse; `reach`, `omega`, `jets`, `jetCol`, `face`, `companion`, `period`, `starCol`
 for blackhole). Named bodies: `Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })`.

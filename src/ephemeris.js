@@ -1,4 +1,4 @@
-/*! ephemeris 0.10.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.11.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -69,6 +69,8 @@
     else ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${a.toFixed(3)})`;
     ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
   };
+  // Every mode paints its soft glow (radial gradients under the dots) only when !ink and
+  // opts.glow !== false, so glow:false leaves just the dots on a clear canvas.
   // Optional space ground: pill-clipped dark gradient with hashed, twinkling stars. Leaves the clip set.
   function paintSpace(ctx, W, size, t, o) {
     const half = size / 2, cx = W / 2, R = half * 0.98;
@@ -142,7 +144,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       let g = ctx.createRadialGradient(0, 0, Rs * 0.9, 0, 0, Rs * 3.2);
       g.addColorStop(0, pal.halo[0]); g.addColorStop(0.4, pal.halo[1]); g.addColorStop(1, pal.halo[2]);
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -220,7 +222,7 @@
     // (top) jet is beamed bright and the counter-jet dim, as in every picture of M87.
     function paintJets() {
       const jc = o.jetCol || pal.glow, NJ = Math.round(60 * countScale(size, 1.2, 14) * (jetLen / 3) * (o.lite ? 0.5 : 1));
-      if (!ink) {
+      if (!ink && o.glow !== false) {
         for (const [side, a] of [[-1, 1], [1, 0.45]]) {
           ctx.save(); ctx.beginPath(); ctx.rect(-W, side < 0 ? -size : 0, 2 * W, size); ctx.clip();
           ctx.scale(0.14, 1); ctx.globalAlpha = a;
@@ -248,7 +250,7 @@
       const sc = starNear ? 1.06 : 0.94, af = starNear ? 1 : 0.8, pull = 0.5;
       const sx = aS * cS, sy = aS * sS * tilt;
       const col = o.starCol || [180, 205, 255], SP = [col, col, [255, 255, 255]];
-      if (!ink) {
+      if (!ink && o.glow !== false) {
         const g = ctx.createRadialGradient(sx, sy, Rstar * 0.5, sx, sy, Rstar * 2.2);
         g.addColorStop(0, rgba(col, 0.3 * af)); g.addColorStop(1, rgba(col, 0));
         ctx.fillStyle = g; ctx.fillRect(sx - Rstar * 2.2, sy - Rstar * 2.2, Rstar * 4.4, Rstar * 4.4);
@@ -305,7 +307,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {   // halo breathes with the pulse
+    if (!ink && o.glow !== false) {   // halo breathes with the pulse
       const g = ctx.createRadialGradient(0, 0, Rc * 0.5, 0, 0, Rc * (3 + 3 * pulse));
       g.addColorStop(0, rgba(pal.glow, 0.25 + 0.45 * pulse)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -382,7 +384,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {   // core glow, plus a disk haze squashed to the viewing angle
+    if (!ink && o.glow !== false) {   // core glow, plus a disk haze squashed to the viewing angle
       let g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.55);
       g.addColorStop(0, rgba(pal.ramp[2], 0.5)); g.addColorStop(0.3, rgba(pal.glow, 0.22)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -482,7 +484,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {   // diffuse gas: one soft gradient per cloud, then a warm bloom per star
+    if (!ink && o.glow !== false) {   // diffuse gas: one soft gradient per cloud, then a warm bloom per star
       for (const c of clouds) {
         const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r * 1.5);
         g.addColorStop(0, rgba(ramp(pal.ramp, c.heat), 0.16)); g.addColorStop(1, rgba(pal.glow, 0));
@@ -551,7 +553,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {   // coma
+    if (!ink && o.glow !== false) {   // coma
       const g = ctx.createRadialGradient(nx, ny, 0, nx, ny, Rn * 5);
       g.addColorStop(0, rgba(pal.ramp[2], 0.55)); g.addColorStop(0.3, rgba(pal.glow, 0.22)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -629,7 +631,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       const g = ctx.createRadialGradient(0, 0, Rp * 0.6, 0, 0, Rp * 2.6);
       g.addColorStop(0, rgba(pal.glow, 0.22)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -770,7 +772,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       const flash = p < 0.14 ? 1 - p / 0.14 : 0;
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * (0.25 + 0.55 * flash));
       g.addColorStop(0, rgba(pal.ramp[2], 0.25 + 0.6 * flash)); g.addColorStop(0.4, rgba(pal.glow, 0.12 + 0.3 * flash)); g.addColorStop(1, rgba(pal.glow, 0));
@@ -830,7 +832,7 @@
     const dot = dotPainter(ctx, ink, dark);
 
     const [x1, y1, z1] = proj(...P1), [x2, y2, z2] = proj(...P2);
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       for (const [x, y, r, col] of [[x1, y1, R1 * 3.2, pal.glow], [x2, y2, R2 * 3, pal.ramp[0]]]) {
         const g = ctx.createRadialGradient(x, y, 0, x, y, r);
         g.addColorStop(0, rgba(col, 0.45)); g.addColorStop(1, rgba(col, 0));
@@ -908,7 +910,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       const g = ctx.createRadialGradient(0, 0, Rs * 0.8, 0, 0, Rs * (1.8 + 1.4 * total));
       g.addColorStop(0, rgba(pal.glow, 0.35 + 0.25 * total)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -953,7 +955,7 @@
     const ring = clamp01(1 - Math.abs(gap - Rs * 0.32) / (Rs * 0.28));
     if (hasMoon && ring > 0 && gap > 0.05) {
       const ux = -mx / gap, uy = -my / gap, x = ux * Rs * 0.98, y = uy * Rs * 0.98;
-      if (!ink) { const g = ctx.createRadialGradient(x, y, 0, x, y, Rs * 0.7); g.addColorStop(0, rgba(pal.ramp[2], 0.9 * ring)); g.addColorStop(1, rgba(pal.ramp[2], 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
+      if (!ink && o.glow !== false) { const g = ctx.createRadialGradient(x, y, 0, x, y, Rs * 0.7); g.addColorStop(0, rgba(pal.ramp[2], 0.9 * ring)); g.addColorStop(1, rgba(pal.ramp[2], 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
       dot(x, y, Math.max(rMin, (1.6 + 1.2 * ring) * M), pal.ramp[2], ring, 0.04);
     }
     // the moon: a hard disc in colour, absence in ink
@@ -988,7 +990,7 @@
     ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
     const dot = dotPainter(ctx, ink, dark);
 
-    if (!ink) {
+    if (!ink && o.glow !== false) {
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.5);
       g.addColorStop(0, rgba(pal.glow, 0.45)); g.addColorStop(0.25, rgba(pal.glow, 0.12)); g.addColorStop(1, rgba(pal.glow, 0));
       ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size);
@@ -1148,7 +1150,7 @@
   const num = v => (v == null || v === '' ? undefined : Number(v));
 
   // Markup contract: <canvas class=orb width=64 height=64 data-orb-mode=pulsar> (or data-orb-state=pinging).
-  // Height is the preset; width lets wide modes stretch. Flags: data-orb-ink, -lite, -space (=1),
+  // Height is the preset; width lets wide modes stretch. Flags: data-orb-ink, -lite, -space (=1), -glow (=0),
   // data-orb-arms / -spin / -tilt for mode options. Colours via --orb-* custom properties.
   function mount(canvas) {
     if (canvas.dataset.orbReady === '1') return;
@@ -1170,7 +1172,7 @@
                   phase: ds.orbPhase === 'cycle' ? 'cycle' : num(ds.orbPhase), surface: ds.orbSurface,
                   reach: num(ds.orbReach), jets: num(ds.orbJets) };
     for (const k in own) if (own[k] === undefined) delete own[k];
-    const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1' };
+    const opts = { ...(body ? body.opts : null), ...own, w, ink: ds.orbInk === '1', lite: ds.orbLite === '1', space: ds.orbSpace === '1', glow: ds.orbGlow !== '0' };
     const paint = t => {
       opts.palette = readPalette(canvas, defaults) || (body && body.palette) || null;   // every frame, so themes and :hover apply live
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, size);
@@ -1203,7 +1205,7 @@
   }
 
   return {
-    version: '0.10.0',
+    version: '0.11.0',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
