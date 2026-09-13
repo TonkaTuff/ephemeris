@@ -1,4 +1,4 @@
-/*! ephemeris 0.12.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.12.1 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -1056,9 +1056,9 @@
     const ink = !!o.ink, pal = buildPal(o.palette || PERSEID);
     const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
     const dot = dotPainter(ctx, ink, dark);
-    const T = t * (o.spin ?? 1), slots = o.slots ?? 6, period = o.period ?? 2.2, chance = o.chance ?? 0.7, fire = o.fireballs ?? 0.2;
+    const T = t * (o.spin ?? 1), slots = o.slots ?? 8, period = o.period ?? 2.2, chance = o.chance ?? 0.85, fire = o.fireballs ?? 0.2;
     const rx = W * (o.rx ?? 0.14), ry = -size * (o.ry ?? 0.3);   // the radiant, up and to the right
-    const ND = Math.round(26 * countScale(size, 0.9, 6) * lite);
+    const ND = Math.round(40 * countScale(size, 0.9, 6) * lite);
     ctx.save();
     if (o.space) paintSpace(ctx, W, size, t, o);
     ctx.translate(cx, half);
@@ -1067,13 +1067,13 @@
       const u = T / period + s / slots, c = Math.floor(u), p = (u - c), k = c * 7.7 + s * 3.1;
       if (E(k, 0.5) > chance) continue;   // an empty slot: nothing this time
       const a = E(k, 1.1) * TAU, dx = Math.cos(a), dy = Math.sin(a), big = E(k, 2.2) < fire;
-      const d0 = size * (0.12 + 0.45 * E(k, 3.3)), L = size * (0.2 + 0.3 * E(k, 4.4)) * (big ? 1.6 : 1), run = big ? 0.42 : 0.3;
+      const d0 = size * (0.12 + 0.45 * E(k, 3.3)), L = size * (0.25 + 0.4 * E(k, 4.4)) * (big ? 1.6 : 1), run = big ? 0.42 : 0.3;
       const q = Math.min(1, p / run), hx = rx + dx * (d0 + q * L), hy = ry + dy * (d0 + q * L);
       const tail = L * (big ? 0.45 : 0.3) * Math.min(1, q * 3), col = ink ? null : pal.ramp;
       if (p < run) {   // running: the head and a streak behind it
         for (let j = 0; j < ND; j++) {
           const f = j / ND, x = hx - dx * tail * f, y = hy - dy * tail * f, bright = (1 - f) ** 1.3;
-          dot(x, y, Math.max(rMin, M * (big ? 1.6 : 1) * (0.5 + 0.9 * bright)), col ? ramp(col, 0.4 + 0.6 * bright) : null, 0.95 * bright * (q < 0.1 ? q / 0.1 : 1), ink ? 0.05 + 0.4 * f : 0);
+          dot(x, y, Math.max(rMin, M * (big ? 1.7 : 1) * (0.7 + 1.1 * bright)), col ? ramp(col, 0.4 + 0.6 * bright) : null, 0.95 * bright * (q < 0.1 ? q / 0.1 : 1), ink ? 0.05 + 0.4 * f : 0);
         }
         if (!ink && o.glow !== false && big) { const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, size * 0.08); g.addColorStop(0, rgba(pal.glow, 0.5)); g.addColorStop(1, rgba(pal.glow, 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
       } else if (big) {   // a fireball's train, lingering and drifting
@@ -1109,15 +1109,15 @@
       for (let i = 0; i < count; i++) {
         const q = lead - i * gap; if (q <= 0 || q >= 1) continue;
         const [x, y] = path(q), flare = E(i, 1.1) < 0.12 ? 0.5 + 0.5 * Math.sin(T * 3 + i) : 0;
-        dot(x, y, Math.max(rMin, M * (1 + 1.2 * flare)), ink ? null : ramp(pal.ramp, 0.7 + 0.3 * flare), (0.5 + 0.4 * Math.sin(q * Math.PI) ** 0.5) * (0.8 + 0.2 * flare), ink ? 0.1 : 0);
+        dot(x, y, Math.max(rMin, M * (1.6 + 1.4 * flare)), ink ? null : ramp(pal.ramp, 0.7 + 0.3 * flare), (0.6 + 0.4 * Math.sin(q * Math.PI) ** 0.5) * (0.8 + 0.2 * flare), ink ? 0.1 : 0);
       }
     } else {
       const q = p * 1.2 - 0.1; if (q > 0 && q < 1) {
         const [x, y] = path(q), shadow = clamp01((q - 0.78) / 0.15), up = Math.sin(q * Math.PI) ** 0.6;
         const col = ink ? null : [255, Math.round(255 - 130 * shadow), Math.round(250 - 170 * shadow)], a = up * (1 - shadow);
-        for (let j = 8; j >= 1; j--) { const [tx, ty] = path(q - j * 0.006); dot(tx, ty, Math.max(rMin, M * 0.6), col, a * 0.35 * (1 - j / 9), ink ? 0.4 : 0); }
-        dot(x, y, Math.max(rMin, M * 2.2), col, a, 0);
-        if (!ink && o.glow !== false) { const g = ctx.createRadialGradient(x, y, 0, x, y, size * 0.07); g.addColorStop(0, rgba(pal.glow, 0.45 * a)); g.addColorStop(1, rgba(pal.glow, 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
+        for (let j = 10; j >= 1; j--) { const [tx, ty] = path(q - j * 0.007); dot(tx, ty, Math.max(rMin, M * 0.9), col, a * 0.4 * (1 - j / 11), ink ? 0.4 : 0); }
+        dot(x, y, Math.max(rMin, M * 3.2), col, a, 0);
+        if (!ink && o.glow !== false) { const g = ctx.createRadialGradient(x, y, 0, x, y, size * 0.11); g.addColorStop(0, rgba(pal.glow, 0.6 * a)); g.addColorStop(1, rgba(pal.glow, 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
       }
     }
     ctx.restore();
@@ -1293,7 +1293,7 @@
   }
 
   return {
-    version: '0.12.0',
+    version: '0.12.1',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })
