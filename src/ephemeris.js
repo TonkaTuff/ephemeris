@@ -1,4 +1,4 @@
-/*! ephemeris 0.11.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
+/*! ephemeris 0.12.0 — celestial stipple. Canvas 2D, no dependencies. MIT. */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Ephemeris = factory();
@@ -1046,6 +1046,84 @@
     if (o.space) paintRim(ctx, W, size);
   }
 
+  /* ================================================================== meteors */
+  // A meteor shower: streaks radiating from the shower's radiant on a hashed schedule, each a line
+  // of dots that flares, runs and fades in under a second. The bright ones are fireballs and leave a
+  // train that lingers and drifts. Between meteors the sky just sits there.
+  const PERSEID = { cold: [120, 160, 255], mid: [200, 225, 255], hot: [255, 255, 245], glow: [140, 170, 255], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawMeteors(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || PERSEID);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const dot = dotPainter(ctx, ink, dark);
+    const T = t * (o.spin ?? 1), slots = o.slots ?? 6, period = o.period ?? 2.2, chance = o.chance ?? 0.7, fire = o.fireballs ?? 0.2;
+    const rx = W * (o.rx ?? 0.14), ry = -size * (o.ry ?? 0.3);   // the radiant, up and to the right
+    const ND = Math.round(26 * countScale(size, 0.9, 6) * lite);
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    for (let s = 0; s < slots; s++) {
+      const u = T / period + s / slots, c = Math.floor(u), p = (u - c), k = c * 7.7 + s * 3.1;
+      if (E(k, 0.5) > chance) continue;   // an empty slot: nothing this time
+      const a = E(k, 1.1) * TAU, dx = Math.cos(a), dy = Math.sin(a), big = E(k, 2.2) < fire;
+      const d0 = size * (0.12 + 0.45 * E(k, 3.3)), L = size * (0.2 + 0.3 * E(k, 4.4)) * (big ? 1.6 : 1), run = big ? 0.42 : 0.3;
+      const q = Math.min(1, p / run), hx = rx + dx * (d0 + q * L), hy = ry + dy * (d0 + q * L);
+      const tail = L * (big ? 0.45 : 0.3) * Math.min(1, q * 3), col = ink ? null : pal.ramp;
+      if (p < run) {   // running: the head and a streak behind it
+        for (let j = 0; j < ND; j++) {
+          const f = j / ND, x = hx - dx * tail * f, y = hy - dy * tail * f, bright = (1 - f) ** 1.3;
+          dot(x, y, Math.max(rMin, M * (big ? 1.6 : 1) * (0.5 + 0.9 * bright)), col ? ramp(col, 0.4 + 0.6 * bright) : null, 0.95 * bright * (q < 0.1 ? q / 0.1 : 1), ink ? 0.05 + 0.4 * f : 0);
+        }
+        if (!ink && o.glow !== false && big) { const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, size * 0.08); g.addColorStop(0, rgba(pal.glow, 0.5)); g.addColorStop(1, rgba(pal.glow, 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
+      } else if (big) {   // a fireball's train, lingering and drifting
+        const age = (p - run) / (1 - run), NT = Math.round(ND * 1.5);
+        for (let j = 0; j < NT; j++) {
+          const f = j / NT, x = rx + dx * (d0 + f * L) + (noise(j * 0.3, T * 0.5) - 0.5) * size * 0.03 * age, y = ry + dy * (d0 + f * L) + age * size * 0.01;
+          dot(x, y, Math.max(rMin, M * (0.8 + 1.4 * age)), col ? ramp(col, 0.3) : null, 0.45 * (1 - age) ** 1.5 * Math.sin(f * Math.PI) ** 0.5, ink ? 0.5 : 0);
+        }
+      }
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
+  /* ================================================================== passes */
+  // Things going over. The ISS: one point brightening as it climbs, crossing, then reddening and
+  // going out as it runs into the Earth's shadow. A Starlink train: a string of beads on one line
+  // across the sky, a few flaring. Both on a schedule, so a still frame usually has one going over.
+  const SATELLITE = { cold: [160, 170, 200], mid: [220, 228, 245], hot: [255, 255, 250], glow: [180, 190, 230], ring: [255, 255, 255], shadow: [0, 0, 0] };
+  function drawPasses(ctx, size, t, dark, o = {}) {
+    const W = o.w ?? size, half = size / 2, cx = W / 2;
+    const ink = !!o.ink, pal = buildPal(o.palette || SATELLITE);
+    const M = radiusScale(size), lite = o.lite ? 0.5 : 1, rMin = 0.3;
+    const dot = dotPainter(ctx, ink, dark);
+    const T = t * (o.spin ?? 1), train = o.form === 'train', period = o.period ?? (train ? 16 : 12), p = frac(T / period);
+    const path = q => [(q - 0.5) * W * 1.1, size * (0.33 - 0.6 * q) - Math.sin(q * Math.PI) * size * 0.14];   // low on the left, high on the right
+    ctx.save();
+    if (o.space) paintSpace(ctx, W, size, t, o);
+    ctx.translate(cx, half);
+    ctx.globalCompositeOperation = ink ? 'source-over' : 'lighter';
+    if (train) {
+      const count = o.count ?? 40, gap = o.gap ?? 0.016, lead = p * (1 + count * gap) ;
+      for (let i = 0; i < count; i++) {
+        const q = lead - i * gap; if (q <= 0 || q >= 1) continue;
+        const [x, y] = path(q), flare = E(i, 1.1) < 0.12 ? 0.5 + 0.5 * Math.sin(T * 3 + i) : 0;
+        dot(x, y, Math.max(rMin, M * (1 + 1.2 * flare)), ink ? null : ramp(pal.ramp, 0.7 + 0.3 * flare), (0.5 + 0.4 * Math.sin(q * Math.PI) ** 0.5) * (0.8 + 0.2 * flare), ink ? 0.1 : 0);
+      }
+    } else {
+      const q = p * 1.2 - 0.1; if (q > 0 && q < 1) {
+        const [x, y] = path(q), shadow = clamp01((q - 0.78) / 0.15), up = Math.sin(q * Math.PI) ** 0.6;
+        const col = ink ? null : [255, Math.round(255 - 130 * shadow), Math.round(250 - 170 * shadow)], a = up * (1 - shadow);
+        for (let j = 8; j >= 1; j--) { const [tx, ty] = path(q - j * 0.006); dot(tx, ty, Math.max(rMin, M * 0.6), col, a * 0.35 * (1 - j / 9), ink ? 0.4 : 0); }
+        dot(x, y, Math.max(rMin, M * 2.2), col, a, 0);
+        if (!ink && o.glow !== false) { const g = ctx.createRadialGradient(x, y, 0, x, y, size * 0.07); g.addColorStop(0, rgba(pal.glow, 0.45 * a)); g.addColorStop(1, rgba(pal.glow, 0)); ctx.fillStyle = g; ctx.fillRect(-W, -size, 2 * W, 2 * size); }
+      }
+    }
+    ctx.restore();
+    if (o.space) paintRim(ctx, W, size);
+  }
+
   /* ================================================================== registry + driver */
   const MODES = {
     blackhole: { draw: drawBlackHole, defaults: EMBER,    state: 'pondering' },
@@ -1057,7 +1135,9 @@
     supernova: { draw: drawSupernova, defaults: CRAB,     state: 'erupting' },
     binary:    { draw: drawBinary,    defaults: BINARY,   state: 'pairing' },
     eclipse:   { draw: drawEclipse,   defaults: CORONA,   state: 'aligning' },
-    orrery:    { draw: drawOrrery,    defaults: SOLAR,    state: 'revolving' }
+    orrery:    { draw: drawOrrery,    defaults: SOLAR,    state: 'revolving' },
+    meteors:   { draw: drawMeteors,   defaults: PERSEID,  state: 'streaking' },
+    passes:    { draw: drawPasses,    defaults: SATELLITE, state: 'passing' }
   };
   const STATE_TO_MODE = Object.fromEntries(Object.entries(MODES).map(([m, v]) => [v.state, m]));
 
@@ -1096,6 +1176,12 @@
     'halley':       { mode: 'comet' },
     'hale-bopp':    { mode: 'comet',     opts: { spin: 0.7 },                            palette: P([60, 140, 255], [255, 220, 150], [255, 255, 240], [200, 190, 255]) },
     'neowise':      { mode: 'comet',     opts: { spin: 1.3 },                            palette: P([255, 180, 90], [255, 220, 170], [255, 250, 235], [255, 190, 110]) },
+    // meteor showers and passes
+    'perseids':       { mode: 'meteors',   opts: { slots: 8, period: 1.8 } },
+    'geminids':       { mode: 'meteors',   opts: { slots: 7, period: 2.4, fireballs: 0.35 },          palette: P([255, 210, 140], [255, 235, 200], [255, 255, 250], [255, 220, 150]) },
+    'leonids':        { mode: 'meteors',   opts: { slots: 14, period: 1.2, chance: 0.85 },           palette: P([140, 255, 190], [210, 255, 230], [255, 255, 250], [150, 240, 190]) },
+    'iss-pass':       { mode: 'passes' },
+    'starlink-train': { mode: 'passes',    opts: { form: 'train' } },
     // planets
     'saturn':       { mode: 'saturn' },
     'jupiter':      { mode: 'saturn',    opts: { rings: false, spot: true, spin: 0.55 }, palette: P([190, 90, 60], [225, 195, 160], [255, 242, 225], [210, 170, 130]) },
@@ -1132,6 +1218,8 @@
   const GROUPS = {
     'Solar system': ['sun', 'mercury', 'venus', 'earth', 'moon', 'earth-moon', 'mars', 'jupiter', 'jupiter-moons', 'saturn', 'uranus', 'neptune', 'pluto', 'solar-system', 'totality'],
     'Comets': ['halley', 'hale-bopp', 'neowise'],
+    'Meteor showers': ['perseids', 'geminids', 'leonids'],
+    'Passes': ['iss-pass', 'starlink-train'],
     'Stars': ['sirius', 'albireo', 'crab-pulsar', 'vela', 'sn1987a', 'cassiopeia-a'],
     'Black holes': ['gargantua', 'm87', 'sgr-a', 'ton-618', 'cygnus-x1'],
     'Nebulae': ['orion', 'crab-nebula', 'pillars', 'carina'],
@@ -1205,7 +1293,7 @@
   }
 
   return {
-    version: '0.11.0',
+    version: '0.12.0',
     register, mount, MODES, STATE_TO_MODE, BODIES, GROUPS,
     draw: (mode, ctx, size, t, dark, opts) => MODES[mode].draw(ctx, size, t, dark, opts),
     // draw a named body: Ephemeris.body('andromeda', ctx, 64, t, dark, { lite: true })

@@ -89,7 +89,7 @@ a{color:var(--probe)}
     <div class="eyebrow" id="eyebrow">ephemeris 0.9.3 · celestial stipple</div>
     <h1>Ephemeris</h1>
     <p class="lede">Scalable animated representations of amazing things in the sky, drawn as dots!!
-      <b>No dependencies</b>, one script. Ten kinds of body and forty‑five named ones, from the
+      <b>No dependencies</b>, one script. Twelve kinds of body and fifty named ones, from the
       Milky Way to Halley's comet. Colour them with six CSS variables, or run them monochrome.</p>
   </header>
 
@@ -144,6 +144,13 @@ a{color:var(--probe)}
       <div class="cell" data-pick="halley" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="halley"></canvas></div><div class="nm">Halley</div><div class="meta">blue ion tail, dust tail</div></div>
       <div class="cell" data-pick="hale-bopp" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="hale-bopp"></canvas></div><div class="nm">Hale-Bopp</div><div class="meta">two-tone tails</div></div>
       <div class="cell" data-pick="neowise" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="neowise"></canvas></div><div class="nm">NEOWISE</div><div class="meta">golden, fast</div></div>
+      <h3 class="grp">Meteor showers</h3>
+      <div class="cell" data-pick="perseids" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="perseids"></canvas></div><div class="nm">Perseids</div><div class="meta">August: fast and blue-white, radiating from Perseus</div></div>
+      <div class="cell" data-pick="geminids" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="geminids"></canvas></div><div class="nm">Geminids</div><div class="meta">December: slower, yellow, the most fireballs</div></div>
+      <div class="cell" data-pick="leonids" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="leonids"></canvas></div><div class="nm">Leonids</div><div class="meta">November, in a storm year: a meteor every second</div></div>
+      <h3 class="grp">Passes</h3>
+      <div class="cell" data-pick="iss-pass" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="iss-pass"></canvas></div><div class="nm">ISS pass</div><div class="meta">climbs, crosses, then reddens and goes out in the Earth's shadow</div></div>
+      <div class="cell" data-pick="starlink-train" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="200" height="150" data-orb-body="starlink-train"></canvas></div><div class="nm">Starlink train</div><div class="meta">a string of beads on one line, a few flaring</div></div>
       <h3 class="grp">Stars</h3>
       <div class="cell" data-pick="sirius" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="sirius"></canvas></div><div class="nm">Sirius A/B</div><div class="meta">white pair, gas stream</div></div>
       <div class="cell" data-pick="albireo" role="button" tabindex="0"><div class="orbwrap"><canvas class="orb" width="150" height="150" data-orb-body="albireo"></canvas></div><div class="nm">Albireo</div><div class="meta">gold and blue pair</div></div>
@@ -377,7 +384,7 @@ a{color:var(--probe)}
 // added later? wire them up
 Ephemeris.register(someRoot);</pre>
       <ul>
-        <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (45, grouped above)</li>
+        <li><b>data-orb-body</b> milky-way · andromeda · orion · saturn · halley … (50, grouped above)</li>
         <li><b>data-orb-mode</b> blackhole · pulsar · galaxy · nebula · comet · saturn · supernova · binary · eclipse · orrery, or the matching <b>data-orb-state</b></li>
         <li><b>data-orb-ink=1</b> monochrome dots that follow the page theme</li>
         <li><b>data-orb-lite=1</b> half the particles · <b>data-orb-space=1</b> dark ground with stars · <b>data-orb-glow=0</b> dots only, no soft glow</li>

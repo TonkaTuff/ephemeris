@@ -15,7 +15,7 @@ Celestial stipple: Scalable animated representations of amazing things in the sk
 <p align="center"><sub>Gargantua on a wide canvas, then Andromeda, Saturn, Orion, the Crab pulsar, Earth, the Cartwheel, and Andromeda in ink.
 These are stills; every one of them moves. See them live on the <a href="https://tonkatuff.github.io/ephemeris/">demo and playground</a>.</sub></p>
 
-Ten kinds of body, and named presets for forty-five real ones:
+Twelve kinds of body, and named presets for fifty real ones:
 
 | mode | state | what you see |
 |---|---|---|
@@ -29,6 +29,8 @@ Ten kinds of body, and named presets for forty-five real ones:
 | `binary` | pairing | two stars round a barycentre on a tilted orbit, a gas stream pulled off the secondary curling into the primary |
 | `eclipse` | aligning | a dotted sun with a corona of streamers; the moon crosses it, corona and prominences show near totality, diamond ring either side |
 | `orrery` | revolving | the solar system as a clockwork model: a small Sun, eight planets on compressed orbits at their relative periods, the asteroid belt, Saturn's ring, dotted orbits, seen at a tilt |
+| `meteors` | streaking | a meteor shower: streaks radiating from the radiant on a hashed schedule, fireballs leaving trains that linger |
+| `passes` | passing | the ISS climbing, crossing and going out in the Earth's shadow, or a Starlink train, beads on one line |
 
 ### Named bodies
 
@@ -55,6 +57,11 @@ still override, and the CSS variables still recolour.
 | Comets | `halley` | comet |
 |  | `hale-bopp` | comet |
 |  | `neowise` | comet |
+| Meteor showers | `perseids` | meteors, August, fast and blue-white |
+|  | `geminids` | meteors, December, slower and yellow, the most fireballs |
+|  | `leonids` | meteors, November in a storm year |
+| Passes | `iss-pass` | passes, one bright point going over |
+|  | `starlink-train` | passes, a string of beads |
 | Stars | `sirius` | binary, A and the white dwarf |
 |  | `albireo` | binary, gold and blue |
 |  | `crab-pulsar` | pulsar |
